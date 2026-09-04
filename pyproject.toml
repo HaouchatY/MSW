@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "msw"
+version = "0.1.0"
+description = "Multi-Scale Sliced Wasserstein distances and calibrated two-sample tests for stationary image distributions"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Youssef Haouchat", email = "youssef.haouchat@epfl.ch" }]
+dependencies = ["torch>=2.0", "numpy"]
+keywords = ["sliced wasserstein", "two-sample test", "generative model evaluation",
+            "texture", "stationary", "image statistics"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+
+[project.urls]
+Homepage = "https://github.com/USERNAME/MSW"
+
+[tool.setuptools]
+packages = ["msw"]
