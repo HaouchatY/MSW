@@ -9,7 +9,7 @@ SIZE, N = 32, 500
 s0 = powerlaw_spectrum(SIZE, 3.0, total_power=1.0)     # reference spectrum
 s1 = powerlaw_spectrum(SIZE, 3.1, total_power=1.0)     # slightly steeper slope
 
-g = torch.Generator(device=msw.DEVICE).manual_seed(0)
+g = torch.Generator(device=msw.get_device()).manual_seed(0)
 A = sample_field(s0, N, generator=g)                   # (N, 1, 32, 32)
 B = sample_field(s1, N, generator=g)
 
