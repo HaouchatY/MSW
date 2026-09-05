@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Youssef Haouchat", email = "youssef.haouchat@epfl.ch" }]
-dependencies = ["torch>=2.0", "numpy"]
+dependencies = ["torch>=2.0,<2.7", "numpy"]
 keywords = ["sliced wasserstein", "two-sample test", "generative model evaluation",
             "texture", "stationary", "image statistics"]
 classifiers = [
