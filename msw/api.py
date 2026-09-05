@@ -181,7 +181,8 @@ def test(a: torch.Tensor, b: torch.Tensor, groups: int | None = None,
 
     per_level = {name: _level_ts(tg, est.level_sizes)
                  for (name, est, _c), tg in zip(ests, tgs)}
-    diag = _diagnose(ests, tgs)
+    diag = (_diagnose(ests, tgs) if p <= 0.1 else
+            f"no significant difference detected (p = {p:.3f})")
     return TestResult(T=float(T[0]), p=p, p_cct=p_cct,
                       components={nm: float(A[0, i]) for i, nm in enumerate(names)},
                       component_p=comp_p, per_level=per_level,
@@ -215,8 +216,9 @@ def distance(a: torch.Tensor, b: torch.Tensor, groups: int = 10,
              seed: int = 0) -> tuple[float, float, float]:
     """The plain (pseudo-)metric value with a 95% jackknife-style CI.
 
-    Returns (d, lo, hi): d is the fixed-weight multi-scale sliced distance and
-    [lo, hi] a Student-t interval over the G disjoint image groups.  The CI is
+    Returns (d, lo, hi): d is the floor-corrected multi-scale sliced distance
+    (zero in expectation when the two sets share a distribution) and [lo, hi] a
+    Student-t interval over the G disjoint image groups, so lo <= d <= hi.  The CI is
     on the METHOD'S value D -- it is NOT a certified bound on the true W2:
     D's frequency tilt (documented in the paper) means D can exceed W2-bar on
     low-frequency differences.
@@ -226,11 +228,11 @@ def distance(a: torch.Tensor, b: torch.Tensor, groups: int = 10,
                        bank="dct", seed=seed)
     dev = est.layouts[0].filters.device
     a, b = a.to(dev).float(), b.to(dev).float()
-    d = est.distance(a, b)
     rows = balanced_blocked_values(est.features(a), est.features(b), groups).mean(1)
     G = rows.shape[0]
     m, se = float(rows.mean()), float(rows.std() / G ** 0.5)
     tq = _t975(G - 1)
+    d = math.sqrt(max(0.0, m))
     lo = math.sqrt(max(0.0, m - tq * se))
     hi = math.sqrt(max(0.0, m + tq * se))
     return d, lo, hi
