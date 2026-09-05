@@ -26,5 +26,4 @@ d, lo, hi = msw.distance(A, B)  # distance with 95% CI
 
 More: `examples/quickstart.py`.
 
-Reference: Y. Haouchat, *A Multi-Scale Sliced Wasserstein Distance Between
-Stationary Image Distributions*, under review. MIT license.
+MIT license.
