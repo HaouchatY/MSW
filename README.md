@@ -1,7 +1,7 @@
 # MSW
 
 Multi-scale sliced Wasserstein two-sample tests for stationary image
-distributions. Exact p-values, no trained features, works from very few images.
+distributions.
 
 ## Install
 
