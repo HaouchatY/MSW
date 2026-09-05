@@ -6,7 +6,7 @@ distributions.
 ## Install
 
 ```bash
-pip install git+https://github.com/HaouchatY/MSW.git
+pip install msw
 ```
 
 ## Quickstart
