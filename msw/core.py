@@ -28,7 +28,18 @@ def get_device() -> torch.device:
     """Default device, resolved lazily on first use (never at import)."""
     global _DEVICE
     if _DEVICE is None:
-        _DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        import warnings
+        with warnings.catch_warnings():
+            # torch warns loudly when a CUDA build meets an older driver; we
+            # just want the answer -- report the outcome in one line instead.
+            warnings.simplefilter("ignore")
+            ok = torch.cuda.is_available()
+        _DEVICE = torch.device("cuda" if ok else "cpu")
+        if not ok and torch.backends.cuda.is_built():
+            warnings.warn("msw: CUDA is built into torch but unavailable "
+                          "(no GPU, or driver older than this torch build) -- "
+                          "running on CPU. Use msw.set_device(...) to silence.",
+                          stacklevel=3)
     return _DEVICE
 
 
