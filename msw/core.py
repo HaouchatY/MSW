@@ -19,28 +19,24 @@ from __future__ import annotations
 
 import torch
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+_DEVICE = None
 
-__all__ = ["DEVICE", "set_device", "w1d_sort", "w1d_quantile", "running_estimate"]
+__all__ = ["get_device", "set_device", "w1d_sort", "w1d_quantile", "running_estimate"]
+
+
+def get_device() -> torch.device:
+    """Default device, resolved lazily on first use (never at import)."""
+    global _DEVICE
+    if _DEVICE is None:
+        _DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return _DEVICE
 
 
 def set_device(device) -> torch.device:
-    """Set the default device for newly constructed estimators and banks.
-
-    Call this BEFORE constructing estimators (`MultiScaleSW`, `PortfolioSW`,
-    ...): filter banks are allocated on the default device at construction
-    time.  Input tensors may live on any device -- the public API moves them
-    to the estimator's device automatically.
-    """
-    global DEVICE
-    DEVICE = torch.device(device)
-    # propagate to modules that bound the name at import time
-    import sys
-    for name in ("msw.banks", "msw.estimators", "msw.spectral", "msw.api"):
-        mod = sys.modules.get(name)
-        if mod is not None and hasattr(mod, "DEVICE"):
-            mod.DEVICE = DEVICE
-    return DEVICE
+    """Override the default device for all subsequent estimator construction."""
+    global _DEVICE
+    _DEVICE = torch.device(device)
+    return _DEVICE
 
 
 # ---------------------------------------------------------------------------

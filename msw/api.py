@@ -23,7 +23,7 @@ import torch
 import torch.nn.functional as F
 
 from .banks import make_bank
-from .core import DEVICE
+from .core import get_device
 from .estimators import MultiScaleSW, PortfolioSW
 from .features import balanced_blocked_values, balanced_group_sizes, blocked_values
 from .testing import rel_floor

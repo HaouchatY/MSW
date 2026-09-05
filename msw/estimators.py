@@ -30,7 +30,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .banks import Pyramid, make_bank
-from .core import DEVICE
+from .core import get_device
 from .features import SliceFeatures, blocked_values, paired_values
 
 torch.backends.cudnn.benchmark = True
@@ -117,11 +117,11 @@ class SWSlicer(_Base):
 
     def __init__(self, channels: int, size: int, n_proj: int = 512, zero_mean: bool = True,
                  seed: int | None = None, chunk: int = 2048):
-        g = torch.Generator(device=DEVICE)
+        g = torch.Generator(device=get_device())
         if seed is not None:
             g.manual_seed(seed)
         d = channels * size * size
-        th = torch.randn(n_proj, d, device=DEVICE, generator=g)
+        th = torch.randn(n_proj, d, device=get_device(), generator=g)
         if zero_mean:
             th -= th.mean(1, keepdim=True)
         self.dirs = th / th.norm(dim=1, keepdim=True)
@@ -190,12 +190,12 @@ class MultiScaleSW(_Base):
         self.pyr = Pyramid(levels=levels, blur=blur)
         self.blocks, self.max_pos, self.sample_budget = blocks, max_pos, sample_budget
         self.size, self.channels = size, channels
-        gen = torch.Generator(device=DEVICE)
+        gen = torch.Generator(device=get_device())
         if seed is not None:
             gen.manual_seed(seed)
         with torch.no_grad():
             sizes = [t.shape[-1] for t in self.pyr.analyse(
-                torch.zeros(1, channels, size, size, device=DEVICE))]
+                torch.zeros(1, channels, size, size, device=get_device()))]
         self.layouts: list[SliceLayout] = []
         for l, s_l in enumerate(sizes):
             if s_l < k + 2:
@@ -225,7 +225,7 @@ class MultiScaleSW(_Base):
         hb = h // b
         if self.max_pos is not None and self.max_pos >= hb * hb and b == 1:
             return None
-        return torch.stack([torch.randperm(hb * hb, device=DEVICE, generator=gen)
+        return torch.stack([torch.randperm(hb * hb, device=get_device(), generator=gen)
                             for _ in range(b * b)])       # (b*b, hb*hb)
 
     def _keep(self, avail: int, n_images: int) -> int:
@@ -318,7 +318,7 @@ class _ConvStack(nn.Module):
             in_ch, first, s = L, False, (s + 2 - 4) // 2 + 1
         convs.append(nn.Conv2d(in_ch, L, s, 1, 0, bias=False, groups=1 if first else L))
         self.convs, self.L = nn.ModuleList(convs), L
-        self.to(DEVICE)
+        self.to(get_device())
         self.reset()
 
     @torch.no_grad()

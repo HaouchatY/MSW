@@ -13,7 +13,7 @@ Quick start::
 
 __version__ = "0.1.0"
 
-from .core import DEVICE, set_device, w1d_quantile, w1d_sort, running_estimate
+from .core import get_device, set_device, w1d_quantile, w1d_sort, running_estimate
 from .banks import (Pyramid, dct_bank, gabor_bank, gaussian_bank, make_bank,
                     opponent_dct_bank, orthogonal_bank)
 from .features import (SliceFeatures, balanced_blocked_values, blocked_values,
@@ -29,7 +29,7 @@ __all__ = [
     "test", "distance", "stationarity_index", "TestResult",
     "MultiScaleSW", "PortfolioSW", "SWSlicer", "CSWSlicer",
     "SequentialCertifier",
-    "DEVICE", "set_device",
+    "get_device", "set_device",
     "Pyramid", "make_bank", "dct_bank", "opponent_dct_bank", "gaussian_bank",
     "orthogonal_bank", "gabor_bank",
     "SliceFeatures", "blocked_values", "balanced_blocked_values",

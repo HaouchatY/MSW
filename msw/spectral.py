@@ -59,7 +59,7 @@ import math
 
 import torch
 
-from .core import DEVICE
+from .core import get_device
 
 __all__ = [
     "freq_grid",
@@ -83,14 +83,15 @@ __all__ = [
 ]
 
 
-def freq_grid(size: int, device=DEVICE) -> torch.Tensor:
+def freq_grid(size: int, device=None) -> torch.Tensor:
     """Radial frequency |k| in cycles/pixel on the fftshift-free DFT grid."""
+    device = get_device() if device is None else device
     f = torch.fft.fftfreq(size, device=device)
     return torch.sqrt(f[:, None] ** 2 + f[None, :] ** 2)
 
 
 def powerlaw_spectrum(size: int, p: float, total_power: float | None = 1.0,
-                      device=DEVICE) -> torch.Tensor:
+                      device=None) -> torch.Tensor:
     """S_k proportional to |k|^-p, DC killed.
 
     `total_power=v` rescales so that the pixel variance ``(1/n^2) sum_k S_k``
@@ -99,6 +100,7 @@ def powerlaw_spectrum(size: int, p: float, total_power: float | None = 1.0,
     *shape* of the correlation -- the regime where classic SW degenerates
     (see the paper).
     """
+    device = get_device() if device is None else device
     k = freq_grid(size, device)
     s = torch.zeros_like(k)
     nz = k > 0
@@ -109,9 +111,10 @@ def powerlaw_spectrum(size: int, p: float, total_power: float | None = 1.0,
 
 
 def matern_spectrum(size: int, rho: float, nu: float = 1.5, total_power: float | None = 1.0,
-                    device=DEVICE) -> torch.Tensor:
+                    device=None) -> torch.Tensor:
     """Matern spectrum S_k ~ (1 + (2 pi rho |k|)^2)^{-(nu+1)} -- a light-tailed,
     single-correlation-length alternative to the scale-free power law."""
+    device = get_device() if device is None else device
     k = freq_grid(size, device)
     s = (1.0 + (2 * math.pi * rho * k) ** 2).pow(-(nu + 1.0))
     s[0, 0] = 0.0
@@ -176,7 +179,7 @@ def envelopes_from_filters(h: torch.Tensor, size: int) -> torch.Tensor:
 def dense_envelopes(size: int, n: int, channels: int = 1, zero_mean: bool = False,
                     generator: torch.Generator | None = None) -> torch.Tensor:
     """Envelopes of `n` dense random unit directions (classic SW)."""
-    th = torch.randn(n, channels, size, size, device=DEVICE, generator=generator)
+    th = torch.randn(n, channels, size, size, device=get_device(), generator=generator)
     if zero_mean:
         th -= th.mean(dim=(1, 2, 3), keepdim=True)
     th /= th.flatten(1).norm(dim=1).view(-1, 1, 1, 1)
@@ -193,7 +196,7 @@ def linear_slicer_envelopes(slicer, size: int, channels: int = 1, batch: int = 2
     """
     d = channels * size * size
     cols = []
-    eye = torch.eye(d, device=DEVICE)
+    eye = torch.eye(d, device=get_device())
     for i in range(0, d, batch):
         cols.append(slicer(eye[i : i + batch].reshape(-1, channels, size, size)))
     m = torch.cat(cols)                      # (d, L) : row j = image basis j

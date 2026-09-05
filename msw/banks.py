@@ -17,7 +17,7 @@ import math
 import torch
 import torch.nn.functional as F
 
-from .core import DEVICE
+from .core import get_device
 
 __all__ = [
     "BLUR_KERNELS",
@@ -53,7 +53,7 @@ def gaussian_bank(n: int, k: int, channels: int = 1, zero_mean: bool = True,
     structure rather than to mean brightness; the resulting directions are
     uniform on the sphere of the DC-orthogonal subspace.
     """
-    w = torch.randn(n, channels, k, k, device=DEVICE, generator=generator)
+    w = torch.randn(n, channels, k, k, device=get_device(), generator=generator)
     if zero_mean and k * k * channels > 1:
         w = w - w.mean(dim=(1, 2, 3), keepdim=True)
     return _normalise(w)
@@ -72,7 +72,7 @@ def orthogonal_bank(n: int, k: int, channels: int = 1, zero_mean: bool = True,
     groups = math.ceil(n / d)
     mats = []
     for _ in range(groups):
-        g = torch.randn(d, d, device=DEVICE, generator=generator)
+        g = torch.randn(d, d, device=get_device(), generator=generator)
         q, _ = torch.linalg.qr(g)
         mats.append(q.t())  # rows are orthonormal
     w = torch.cat(mats, 0)[:n].reshape(n, channels, k, k)
@@ -88,14 +88,14 @@ def dct_bank(k: int, channels: int = 1, drop_dc: bool = True) -> torch.Tensor:
     frequency envelope concentrated around (u, v) / (2k).  Returned bank has
     (k^2 - drop_dc) * channels filters (one per (basis, channel) pair).
     """
-    i = torch.arange(k, device=DEVICE, dtype=torch.float32)
-    u = torch.arange(k, device=DEVICE, dtype=torch.float32)
+    i = torch.arange(k, device=get_device(), dtype=torch.float32)
+    u = torch.arange(k, device=get_device(), dtype=torch.float32)
     b = torch.cos(math.pi * (i.unsqueeze(0) + 0.5) * u.unsqueeze(1) / k)  # (k, k)
     b = b / b.norm(dim=1, keepdim=True)
     basis = (b.unsqueeze(1).unsqueeze(3) * b.unsqueeze(0).unsqueeze(2)).reshape(k * k, k, k)
     if drop_dc:
         basis = basis[1:]
-    out = torch.zeros(basis.shape[0] * channels, channels, k, k, device=DEVICE)
+    out = torch.zeros(basis.shape[0] * channels, channels, k, k, device=get_device())
     for c in range(channels):
         out[c :: channels, c] = basis
     return _normalise(out)
@@ -113,17 +113,17 @@ def gabor_bank(n: int, k: int, channels: int = 1, generator: torch.Generator | N
     g = generator
     c = (k - 1) / 2.0
     yy, xx = torch.meshgrid(
-        torch.arange(k, device=DEVICE, dtype=torch.float32) - c,
-        torch.arange(k, device=DEVICE, dtype=torch.float32) - c,
+        torch.arange(k, device=get_device(), dtype=torch.float32) - c,
+        torch.arange(k, device=get_device(), dtype=torch.float32) - c,
         indexing="ij",
     )
     sigma = k / 4.0
     win = torch.exp(-(xx**2 + yy**2) / (2 * sigma**2))
     total = n * channels if channels > 1 else n
-    freq = torch.rand(total, device=DEVICE, generator=g) * 0.5  # cycles / pixel, up to Nyquist
-    ang = (torch.randint(n_orient, (total,), device=DEVICE, generator=g).float() * math.pi / n_orient)
-    ang = ang + torch.rand(total, device=DEVICE, generator=g) * (math.pi / n_orient)
-    phase = torch.rand(total, device=DEVICE, generator=g) * 2 * math.pi
+    freq = torch.rand(total, device=get_device(), generator=g) * 0.5  # cycles / pixel, up to Nyquist
+    ang = (torch.randint(n_orient, (total,), device=get_device(), generator=g).float() * math.pi / n_orient)
+    ang = ang + torch.rand(total, device=get_device(), generator=g) * (math.pi / n_orient)
+    phase = torch.rand(total, device=get_device(), generator=g) * 2 * math.pi
     proj = (xx.unsqueeze(0) * torch.cos(ang).view(-1, 1, 1)
             + yy.unsqueeze(0) * torch.sin(ang).view(-1, 1, 1))
     w = win.unsqueeze(0) * torch.cos(2 * math.pi * freq.view(-1, 1, 1) * proj + phase.view(-1, 1, 1))
@@ -146,14 +146,14 @@ def opponent_dct_bank(k: int, channels: int = 3, drop_dc: bool = True) -> torch.
     """
     if channels != 3:
         return dct_bank(k, channels, drop_dc=drop_dc)
-    i = torch.arange(k, device=DEVICE, dtype=torch.float32)
-    u = torch.arange(k, device=DEVICE, dtype=torch.float32)
+    i = torch.arange(k, device=get_device(), dtype=torch.float32)
+    u = torch.arange(k, device=get_device(), dtype=torch.float32)
     b = torch.cos(math.pi * (i.unsqueeze(0) + 0.5) * u.unsqueeze(1) / k)
     b = b / b.norm(dim=1, keepdim=True)
     basis = (b.unsqueeze(1).unsqueeze(3) * b.unsqueeze(0).unsqueeze(2)).reshape(k * k, k, k)
     if drop_dc:
         basis = basis[1:]
-    vs = torch.tensor([[1., 1., 1.], [1., -1., 0.], [1., 1., -2.]], device=DEVICE)
+    vs = torch.tensor([[1., 1., 1.], [1., -1., 0.], [1., 1., -2.]], device=get_device())
     vs = vs / vs.norm(dim=1, keepdim=True)
     out = torch.stack([v.view(3, 1, 1) * a for a in basis for v in vs])
     return _normalise(out)
@@ -202,7 +202,7 @@ class Pyramid:
     def __init__(self, levels: int = 4, blur: str = "binom5", padding_mode: str = "circular"):
         self.levels = levels
         self.padding_mode = padding_mode
-        g1 = BLUR_KERNELS[blur].to(DEVICE)
+        g1 = BLUR_KERNELS[blur].to(get_device())
         self.g1 = g1 / g1.sum()
         self.g2 = (self.g1.unsqueeze(1) * self.g1.unsqueeze(0))  # separable 2-D, unit L1
         self.pad = (self.g1.numel() - 1) // 2
