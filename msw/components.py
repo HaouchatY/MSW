@@ -68,6 +68,20 @@ def _floor(x: torch.Tensor, scale: torch.Tensor) -> torch.Tensor:
     return torch.maximum(x, torch.clamp(REL * scale, min=1e-300))
 
 
+def finite(A: torch.Tensor) -> torch.Tensor:
+    """Map non-finite component values to 0 -- i.e. to "no evidence".
+
+    A degenerate column (identical inputs, a constant channel, a zero-variance
+    slice) has every orbit entry equal to zero, so its precision weight 1/se^2
+    overflows and the aggregate comes back NaN.  A NaN must not be read as a
+    large statistic: with `>=` comparisons it would score zero exceedances and
+    hand back the orbit minimum, i.e. a spurious rejection.  Mapping it to 0
+    makes the column tie with itself across the whole orbit, which yields
+    p = 1 for that column and contributes nothing to the max.
+    """
+    return torch.nan_to_num(A, nan=0.0, posinf=0.0, neginf=0.0)
+
+
 # ============================================================ block plumbing
 def _shape_stats(s: torch.Tensor) -> dict:
     """Block-level functionals of SORTED samples ``s`` (L, K, S) -> name -> (L, S)."""
@@ -336,6 +350,7 @@ def std_floor(A: torch.Tensor) -> torch.Tensor:
 
 def col_p(A: torch.Tensor) -> list[float]:
     """Per-component orbit (rank) p-values; row 0 of ``A`` is the identity."""
+    A = finite(A)
     P = A.shape[0]
     return [(1.0 + float((A[1:, i] >= A[0, i]).sum())) / P for i in range(A.shape[1])]
 
@@ -348,7 +363,8 @@ def p_maxz(A: torch.Tensor) -> float:
     that keeps its size near nominal at N = 8, where the orbit has 256 elements
     and rank-based combiners run out of resolution.
     """
-    Z = (A - A.mean(0)) / std_floor(A)
+    A = finite(A)
+    Z = finite((A - A.mean(0)) / std_floor(A))
     T = Z.max(1).values
     return (1.0 + float((T[1:] >= T[0]).sum())) / A.shape[0]
 
@@ -365,6 +381,7 @@ def p_minp_wy(A: torch.Tensor) -> float:
     Exact and purely rank-based, hence immune to any standardization bug -- which
     is what makes it a useful cross-check on ``p_maxz`` rather than a rival.
     """
+    A = finite(A)
     P = A.shape[0]
     asc = A.sort(0).values
     lo = torch.searchsorted(asc.t().contiguous(), A.t().contiguous(), right=False).t()

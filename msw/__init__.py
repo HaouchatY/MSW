@@ -17,7 +17,7 @@ the rank of the observed statistic in that orbit, exact in finite samples.  It
 is a real test at N = 8 images per side (256 group elements, granularity 1/256).
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from .core import get_device, set_device, w1d_quantile, w1d_sort, running_estimate
 from .banks import (Pyramid, dct_bank, gabor_bank, gaussian_bank, make_bank,

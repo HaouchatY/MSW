@@ -162,3 +162,27 @@ def test_sequential_smoke():
         b = smooth(16, seed=700 + r) + 0.5 * torch.randn(16, 3, 16, 16, generator=g)
         seq.update(a, b)
     assert seq.e_value > 0 and seq.n_batches == 6
+
+
+def test_degenerate_inputs_report_no_evidence():
+    """Identical or constant inputs must give p = 1, not a spurious rejection.
+
+    A degenerate column has every orbit entry equal to zero, so its precision
+    weight overflows and the aggregate is NaN.  Before the fix, `NaN >= NaN`
+    was False, the exceedance count was zero, and the test returned the orbit
+    minimum -- reporting a highly significant difference between a dataset and
+    itself.
+    """
+    import torch, msw
+    torch.manual_seed(0)
+    a = torch.rand(16, 3, 16, 16)
+    assert msw.test(a, a.clone()).p == 1.0
+    const = torch.full((16, 3, 16, 16), 0.5)
+    assert msw.test(const, const.clone()).p == 1.0
+    dead = torch.rand(16, 3, 16, 16)
+    dead[:, 1] = 0.5
+    assert msw.test(dead, dead.clone()).p == 1.0
+    # a dead channel must not mask a real difference in the live ones
+    moved = dead.clone()
+    moved[:, 0] = (moved[:, 0] + 0.08 * torch.randn(16, 16, 16)).clamp(0, 1)
+    assert msw.test(dead, moved).p < 0.05

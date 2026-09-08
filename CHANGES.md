@@ -1,3 +1,15 @@
+## 0.2.1
+
+Fix: a degenerate input (two identical datasets, a constant image, a
+zero-variance channel) made the precision weight `1/se^2` overflow, so the
+affected components came back NaN.  Because `NaN >= NaN` is False, those
+columns scored zero exceedances on the orbit and the test returned its
+smallest attainable p-value -- reporting a highly significant difference
+between a dataset and itself.  Non-finite component values are now mapped to
+"no evidence" (p = 1 for that column, no contribution to the max), so
+`test(a, a)` returns p = 1.0 and a dead channel no longer masks a real
+difference in the live ones.
+
 # Changes
 
 ## 0.2.0
