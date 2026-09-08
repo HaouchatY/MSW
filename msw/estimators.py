@@ -158,8 +158,12 @@ class MultiScaleSW(_Base):
     channels, size    image shape (C, size, size).
     levels            requested pyramid depth (capped by `size`).
     k                 filter side length at every level.
-    n_filters         filters per level.
-    bank              'gauss' | 'ortho' | 'dct' | 'gabor'.
+    n_filters         filters per level; None keeps the whole bank, which for the
+                      deterministic DCT banks means no random subset is drawn at
+                      all.  When a strict subset is asked for, it is drawn from a
+                      generator seeded by `seed` -- never from the global RNG --
+                      and on the CPU, so CPU and GPU select the same filters.
+    bank              'gauss' | 'ortho' | 'dct' | 'dctopp' | 'gabor'.
     blocks            spatial pooling granularity.  1 pools every position into one
                       histogram, which is exact for translation-invariant data
                       (see the paper); b > 1 keeps b x b position groups as
@@ -180,6 +184,8 @@ class MultiScaleSW(_Base):
                       every slice on the unit sphere of the image space.
     crop_margin       drop positions whose receptive field wraps around the torus.
                       Unnecessary for torus-stationary data, useful for photographs.
+    seed              seeds the bank subset and the kept-position ordering; the
+                      estimator is a deterministic function of its arguments.
     """
 
     def __init__(self, channels: int, size: int, levels: int = 4, k: int = 3,
@@ -193,6 +199,12 @@ class MultiScaleSW(_Base):
         gen = torch.Generator(device=get_device())
         if seed is not None:
             gen.manual_seed(seed)
+        # The DCT banks are deterministic; only the choice of subset when
+        # `n_filters` is smaller than the bank needs randomness, and it gets its
+        # own CPU generator so that (a) it never reads the global RNG and (b)
+        # the selected subset does not depend on the device or on how many
+        # positions the pyramid happened to draw first.
+        bank_gen = torch.Generator().manual_seed(0 if seed is None else int(seed))
         with torch.no_grad():
             sizes = [t.shape[-1] for t in self.pyr.analyse(
                 torch.zeros(1, channels, size, size, device=get_device()))]
@@ -200,8 +212,8 @@ class MultiScaleSW(_Base):
         for l, s_l in enumerate(sizes):
             if s_l < k + 2:
                 break
-            w = make_bank(bank, n_filters, k, channels, generator=gen) \
-                if bank not in ("dct", "dctopp") else make_bank(bank, n_filters, k, channels)
+            w = make_bank(bank, n_filters, k, channels,
+                          generator=gen if bank not in ("dct", "dctopp") else bank_gen)
             nrm = self.pyr.slice_norms(w, l)
             scale = (1.0 / nrm) if normalise_slices else torch.ones_like(nrm)
             crop = 0

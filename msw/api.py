@@ -5,12 +5,19 @@ returns a :class:`TestResult` with the portfolio statistic, an EXACT
 finite-sample p-value, per-component and per-level diagnostics, and a
 stationarity self-check.
 
-The exact p-value comes from a permutation-subgroup argument: within each
-disjoint image group, relabeling the two half-blocks of one dataset flips the
-sign of that group's four-term statistic exactly, and under H0 the joint law
-is invariant, so the 2^G sign patterns of the per-group rows are equally
-likely.  Enumerating them (256 patterns at G=8) gives an exact test with no
-Monte-Carlo permutations and no external null runs, at ~milliseconds cost.
+Where the exact p-value comes from
+----------------------------------
+The two datasets are cut into ``L`` matched blocks of equal size.  Under H0 the
+2L blocks are i.i.d., so swapping the two halves of any matched pair is measure
+preserving: the randomization group is the pair group ``(Z2)^L`` of
+:mod:`msw.pairgroup`.  Every component of the statistic transforms under that
+group by pure sign algebra -- the transport Gram matrix by
+``Psi_ij -> sigma_i sigma_j Psi_ij``, the first-order rows by ``m_i -> -m_i`` --
+so the whole orbit is enumerated without recomputing a single feature, sort or
+convolution.  The p-value is the rank of the observed value in its own orbit:
+exact in finite samples, with no Monte-Carlo permutations, no asymptotics and no
+external null runs.  The orbit is the full ``2^L`` group when that is affordable
+(L <= 12, e.g. every N < 16) and a parity SUBGROUP of 4096 elements otherwise.
 """
 
 from __future__ import annotations
@@ -22,11 +29,12 @@ from dataclasses import dataclass, field
 import torch
 import torch.nn.functional as F
 
+from . import components as C
 from .banks import make_bank
 from .core import get_device
-from .estimators import MultiScaleSW, PortfolioSW
-from .features import balanced_blocked_values, balanced_group_sizes, blocked_values
-from .testing import rel_floor
+from .estimators import MultiScaleSW
+from .pairgroup import block_plan
+from .portfolio import Portfolio, core_columns, portfolios
 
 __all__ = ["test", "distance", "stationarity_index", "TestResult"]
 
@@ -48,92 +56,85 @@ def _auto_levels(size: int) -> int:
 class TestResult:
     """Everything ``msw.test`` measured, plus a plain-language diagnosis."""
 
-    T: float                    # portfolio statistic (max null-standardized component)
-    p: float                    # exact sign-flip p-value of T
-    p_cct: float                # Cauchy combination of per-component sign-flip p-values
+    T: float                    # portfolio statistic (max orbit-standardized component)
+    p: float                    # exact p-value of T on the orbit
+    p_cct: float                # Cauchy combination of the per-component p-values
+    p_wy: float                 # Westfall-Young min-p over the same components
     components: dict            # component name -> observed value
-    component_p: dict           # component name -> exact sign-flip p-value
-    per_level: dict             # bank name -> list of per-level t statistics
+    component_p: dict           # component name -> exact p-value
+    per_level: dict             # slice family -> per-level transport z
     stationarity_index: float   # see `stationarity_index`; > 0.1 prints a warning
-    n_used: int                 # images actually consumed per dataset
-    G: int                      # number of disjoint image groups
+    n_used: int                 # images actually consumed per dataset (= L * M)
+    L: int                      # matched image blocks
+    M: int                      # images per block
+    group_size: int             # group elements enumerated (p granularity = 1/group_size)
+    portfolio: str              # which named portfolio was combined
     _diag: str = field(default="", repr=False)
+
+    @property
+    def G(self) -> int:
+        """Deprecated alias of ``L`` (v0.1 called the blocks 'groups')."""
+        return self.L
 
     def diagnose(self) -> str:
         """Name the pyramid level and slice family carrying the difference."""
         return self._diag
 
 
-def _pattern_components(tg: torch.Tensor, level_sizes: list[int], pats: torch.Tensor,
-                        iv_cols: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
-    """(inverse-variance, max-level) component values under every sign pattern.
-
-    tg    (G, S) blocked per-slice rows;  pats (P, G) of +-1.
-    Returns iv (P,), ml (P,).  The identity pattern must be row 0.
-    """
-    g = tg.shape[0]
-    t_iv = tg if iv_cols is None else tg[:, iv_cols]
-    f = torch.einsum("pg,gs->pgs", pats, t_iv)                       # (P, G, S')
-    tbar = f.mean(1)
-    se = f.std(1) / g ** 0.5
-    med = se.median(dim=1, keepdim=True).values
-    se = torch.maximum(se, torch.maximum(torch.full_like(se, 1e-12), 1e-3 * med))
-    w = 1.0 / se ** 2
-    iv = (w * tbar).sum(1) / w.sum(1)
-    fz = torch.einsum("pg,gs->pgs", pats, tg)
-    zs, i = [], 0
-    ses = []
-    means = []
-    for c in level_sizes:
-        tl = fz[:, :, i:i + c].mean(2)                               # (P, G)
-        means.append(tl.mean(1))
-        ses.append(tl.std(1) / g ** 0.5)
-        i += c
-    se_l = torch.stack(ses, 1)                                       # (P, L)
-    med = se_l.median(dim=1, keepdim=True).values
-    se_l = torch.maximum(se_l, torch.maximum(torch.full_like(se_l, 1e-12), 1e-3 * med))
-    ml = (torch.stack(means, 1) / se_l).max(1).values
-    return iv, ml
+_PORTFOLIOS: dict = {}
 
 
-def _patterns(G: int, device, max_patterns: int = 4096) -> torch.Tensor:
-    if 2 ** G <= max_patterns:
-        idx = torch.arange(2 ** G, device=device)
-    else:  # identity + random subsample of the subgroup (still a valid test)
-        idx = torch.cat([torch.zeros(1, dtype=torch.long, device=device),
-                         torch.randint(1, 2 ** G, (max_patterns - 1,), device=device,
-                                       generator=torch.Generator(device=device).manual_seed(0))])
-    return ((idx.view(-1, 1) >> torch.arange(G, device=device)) & 1) * -2.0 + 1.0
+def _portfolio(channels, size, levels, k, n_filters, L, n_patterns, pattern_mode,
+               seed, use_joint) -> Portfolio:
+    """Cached portfolio: banks and pyramids are deterministic, so reuse is safe."""
+    key = (channels, size, levels, k, n_filters, L, n_patterns, pattern_mode, seed,
+           use_joint, str(get_device()))
+    if key not in _PORTFOLIOS:
+        _PORTFOLIOS[key] = Portfolio(channels, size, levels=levels, k=k,
+                                     n_filters=n_filters, use_joint=use_joint, L=L,
+                                     n_patterns=n_patterns, pattern_mode=pattern_mode,
+                                     seed=seed)
+    return _PORTFOLIOS[key]
 
 
-def _level_ts(tg: torch.Tensor, level_sizes: list[int]) -> list[float]:
-    g = tg.shape[0]
-    out, i = [], 0
-    for c in level_sizes:
-        tl = tg[:, i:i + c].mean(1)
-        se = float(rel_floor((tl.std() / g ** 0.5).reshape(1))[0])
-        out.append(float(tl.mean()) / se)
-        i += c
-    return out
-
-
-def test(a: torch.Tensor, b: torch.Tensor, groups: int | None = None,
-         splitting: str = "balanced", seed: int = 0) -> TestResult:
+def test(a: torch.Tensor, b: torch.Tensor, L: int = 16, n_patterns: int = 4096,
+         portfolio: str = "CORE", combiner: str = "maxz", levels: int | None = None,
+         k: int = 5, n_filters: int | None = None, use_joint: bool = True,
+         seed: int = 0, groups: int | None = None, splitting: str | None = None
+         ) -> TestResult:
     """Calibrated two-sample test between image sets ``a`` and ``b``.
 
-    a, b       (N, C, n, n) tensors on any device, C in {1, 3}, N >= 4.
-    groups     number of disjoint image groups G (default: min(8, N//2)).
-    splitting  'balanced' uses all floor(N/2) image pairs (groups may differ in
-               size by one); 'paper' reproduces the fixed-size splitting of the
-               paper, consuming 2G * floor(N / 2G) images.
+    a, b        (N, C, n, n) tensors on any device, C in {1, 3}, N >= 2.
+    L           matched image blocks (default 16, dropping to N when N < 16).
+                Blocks must have EQUAL size, so ``N mod L`` images per dataset go
+                unused; at an awkward N (25, say) a smaller L uses more of them.
+    n_patterns  group elements to enumerate.  The full group is used whenever
+                ``2^L <= n_patterns``; otherwise a parity subgroup of this order,
+                which keeps the test exact (a random subset would not).
+    portfolio   which named portfolio to combine; 'CORE' (transport + tail/shape
+                + raw pixel + product slices) is the shipped choice.  See
+                ``msw.portfolio.portfolios`` for the menu.
+    combiner    'maxz' (default), 'cct' or 'wy'.  All three are reported; maxz
+                measures at least as powerful as the other two everywhere, and
+                is the only one that keeps its size near nominal at N = 8, where
+                the orbit has 256 elements and rank-based combiners run out of
+                resolution.
+    n_filters   filters per level of the DCT family; None (default) keeps the
+                whole bank, which is deterministic and device-independent.
+    groups      deprecated alias of ``L``.
+    splitting   accepted and ignored: blocks are always equal-sized and every
+                pair of blocks contributes (v0.1 offered 'balanced' / 'paper').
     """
     if a.dim() != 4 or b.dim() != 4 or a.shape[1:] != b.shape[1:]:
         raise ValueError("expected (N, C, n, n) tensors with matching shapes")
-    C, size = a.shape[1], a.shape[-1]
-    port = PortfolioSW(C, size, levels=_auto_levels(size), k=5, n_filters=None,
-                       seed=seed)
-    dev = port.base.layouts[0].filters.device
-    a, b = a.to(dev).float(), b.to(dev).float()
+    if groups is not None:
+        L = groups
+    if splitting is not None and splitting not in ("balanced", "paper"):
+        raise ValueError("splitting must be 'balanced' or 'paper' (both ignored)")
+    channels, size = a.shape[1], a.shape[-1]
+    port = _portfolio(channels, size, levels or _auto_levels(size), k, n_filters,
+                      L, n_patterns, "subgroup", seed, use_joint)
+    a, b = a.to(port.device).float(), b.to(port.device).float()
 
     si = stationarity_index(a)
     if si > 0.1:
@@ -143,99 +144,95 @@ def test(a: torch.Tensor, b: torch.Tensor, groups: int | None = None,
             "(aligned/registered images?); interpret results with caution.",
             stacklevel=2)
 
-    ests = [("dct", port.base, None)]
-    if port.opp is not None:
-        ests.append(("opponent", port.opp, torch.tensor(port._chroma_idx, device=dev)))
-
-    tgs = []
-    if splitting == "balanced":
-        sizes = balanced_group_sizes(a.shape[0], b.shape[0], groups)
-        G, n_used = len(sizes), 2 * sum(balanced_group_sizes(a.shape[0], b.shape[0], groups))
-        for _, est, _c in ests:
-            tgs.append(balanced_blocked_values(est.features(a), est.features(b), groups))
-    elif splitting == "paper":
-        G = groups if groups is not None else 8
-        n_used = 2 * G * (min(a.shape[0], b.shape[0]) // (2 * G))
-        for _, est, _c in ests:
-            tgs.append(blocked_values(est.features(a), est.features(b), groups=G))
+    if combiner not in ("maxz", "cct", "wy"):
+        raise ValueError("combiner must be 'maxz', 'cct' or 'wy'")
+    diag_z: dict = {}
+    A = port.table(a, b, diagnostics=diag_z)
+    names = port.names
+    if portfolio == "CORE":
+        idx = core_columns(names)
     else:
-        raise ValueError("splitting must be 'balanced' or 'paper'")
-
-    pats = _patterns(G, dev)
-    comps, names = [], []
-    for (name, est, cols), tg in zip(ests, tgs):
-        iv, ml = _pattern_components(tg, est.level_sizes, pats, iv_cols=cols)
-        comps += [iv, ml]
-        names += ([f"{name}_iv", f"{name}_ml"] if name == "dct"
-                  else ["chroma_iv", "opponent_ml"])
-    A = torch.stack(comps, 1)                                        # (P, ncomp)
-    mu, sd = A.mean(0), rel_floor(A.std(0))
-    T = ((A - mu) / sd).max(1).values                                # (P,)
-    P = A.shape[0]
-    p = float((1 + (T[1:] >= T[0]).sum()) / P)
-    comp_p = {nm: float((1 + (A[1:, i] >= A[0, i]).sum()) / P) for i, nm in enumerate(names)}
-    # Cauchy combination of the per-component exact p-values: level-valid under
-    # arbitrary dependence between components (Liu & Xie, 2020).
-    cct = sum(math.tan((0.5 - pc) * math.pi) for pc in comp_p.values()) / len(comp_p)
-    p_cct = 0.5 - math.atan(cct) / math.pi
-
-    per_level = {name: _level_ts(tg, est.level_sizes)
-                 for (name, est, _c), tg in zip(ests, tgs)}
-    diag = (_diagnose(ests, tgs) if p <= 0.1 else
+        known = portfolios(names)
+        if portfolio not in known:
+            raise ValueError(f"unknown portfolio {portfolio!r}; "
+                             f"choose one of {sorted(known)}")
+        idx = known[portfolio]
+    S = A[:, idx]
+    pc = C.col_p(A)
+    p_maxz, p_cct = C.p_maxz(S), C.p_cct([pc[i] for i in idx])
+    p_wy = C.p_minp_wy(S)
+    p = {"maxz": p_maxz, "cct": p_cct, "wy": p_wy}[combiner]
+    Z = (S[0] - S.mean(0)) / C.std_floor(S)
+    Lb, M = port.plan(a, b)
+    diag = (_diagnose(diag_z, names, idx, pc) if p <= 0.1 else
             f"no significant difference detected (p = {p:.3f})")
-    return TestResult(T=float(T[0]), p=p, p_cct=p_cct,
-                      components={nm: float(A[0, i]) for i, nm in enumerate(names)},
-                      component_p=comp_p, per_level=per_level,
-                      stationarity_index=si, n_used=n_used, G=G, _diag=diag)
+    return TestResult(
+        T=float(Z.max()), p=p, p_cct=p_cct, p_wy=p_wy,
+        components={names[i]: float(A[0, i]) for i in idx},
+        component_p={names[i]: pc[i] for i in idx},
+        per_level=diag_z, stationarity_index=si, n_used=Lb * M, L=Lb, M=M,
+        group_size=A.shape[0], portfolio=portfolio, _diag=diag)
 
 
-def _diagnose(ests, tgs) -> str:
-    best = (0.0, "no clear concentration")
-    for (name, est, _c), tg in zip(ests, tgs):
-        if name == "dct":
-            fams = [("per-channel DCT", list(range(tg.shape[1])), est.level_sizes)]
-        else:
-            lum, chr_, i = [], [], 0
-            for c in est.level_sizes:
-                lum += [i + j for j in range(c) if j % 3 == 0]
-                chr_ += [i + j for j in range(c) if j % 3 != 0]
-                i += c
-            per_lvl = [c // 3 for c in est.level_sizes]
-            fams = [("opponent luminance", lum, per_lvl),
-                    ("opponent chroma", chr_, [2 * v for v in per_lvl])]
-        for fam, cols, lsizes in fams:
-            ts = _level_ts(tg[:, cols], lsizes)
-            for lvl, t in enumerate(ts):
-                if abs(t) > best[0]:
-                    best = (abs(t), f"difference concentrated at level {lvl}, {fam} "
-                                    f"(t = {t:+.1f})")
-    return best[1]
+def _diagnose(diag_z: dict, names: list[str], idx: list[int], pc: list[float]) -> str:
+    """Name the level and family with the largest transport z, and the top component."""
+    best = (0.0, None)
+    for fam, zs in diag_z.items():
+        for lvl, t in enumerate(zs):
+            if abs(t) > best[0]:
+                best = (abs(t), f"difference concentrated at level {lvl}, {fam} "
+                                f"(t = {t:+.1f})")
+    top = min(idx, key=lambda i: (pc[i], names[i]))
+    where = (best[1] if best[0] >= 2.0 else
+             "no scale concentration in the transport rows")
+    return f"{where}; strongest component {names[top]} (p = {pc[top]:.4g})"
 
 
-def distance(a: torch.Tensor, b: torch.Tensor, groups: int = 10,
-             seed: int = 0) -> tuple[float, float, float]:
-    """The plain (pseudo-)metric value with a 95% jackknife-style CI.
+def distance(a: torch.Tensor, b: torch.Tensor, L: int = 16, seed: int = 0,
+             levels: int | None = None, k: int = 5,
+             groups: int | None = None) -> tuple[float, float, float]:
+    """The plain (pseudo-)metric value with a 95% jackknife CI.
 
-    Returns (d, lo, hi): d is the floor-corrected multi-scale sliced distance
+    Returns (d, lo, hi): ``d`` is the floor-corrected multi-scale sliced distance
     (zero in expectation when the two sets share a distribution) and [lo, hi] a
-    Student-t interval over the G disjoint image groups, so lo <= d <= hi.  The CI is
-    on the METHOD'S value D -- it is NOT a certified bound on the true W2:
-    D's frequency tilt (documented in the paper) means D can exceed W2-bar on
-    low-frequency differences.
+    Student-t interval, so lo <= d <= hi.  The CI is on the METHOD'S value D --
+    it is NOT a certified bound on the true W2: D's frequency tilt means D can
+    exceed W2-bar on low-frequency differences.
+
+    Since 0.2.0 the estimate is the U-statistic over all L(L-1)/2 pairs of image
+    blocks rather than the sum over L/2 disjoint pairs.  Both are unbiased for
+    the same quantity -- the value means exactly what it meant before -- but the
+    U-statistic is the lower-variance one, so the interval is tighter.  The
+    interval itself is a delete-one-block jackknife on that U-statistic.
+
+    ``groups`` is a deprecated alias of ``L``.
     """
-    C, size = a.shape[1], a.shape[-1]
-    est = MultiScaleSW(C, size, levels=_auto_levels(size), k=5, n_filters=None,
-                       bank="dct", seed=seed)
+    if groups is not None:
+        L = groups
+    channels, size = a.shape[1], a.shape[-1]
+    est = MultiScaleSW(channels, size, levels=levels or _auto_levels(size), k=k,
+                       n_filters=None, bank="dct", seed=seed)
     dev = est.layouts[0].filters.device
     a, b = a.to(dev).float(), b.to(dev).float()
-    rows = balanced_blocked_values(est.features(a), est.features(b), groups).mean(1)
-    G = rows.shape[0]
-    m, se = float(rows.mean()), float(rows.std() / G ** 0.5)
-    tq = _t975(G - 1)
-    d = math.sqrt(max(0.0, m))
-    lo = math.sqrt(max(0.0, m - tq * se))
-    hi = math.sqrt(max(0.0, m + tq * se))
-    return d, lo, hi
+    n = min(a.shape[0], b.shape[0])
+    Lb, M = block_plan(n, n, L)
+    if Lb < 3:
+        raise ValueError("need at least 3 image blocks for the jackknife interval")
+    psi, _, _ = C.block_rows(C.to_double(est.features(a[:n])),
+                             C.to_double(est.features(b[:n])), Lb, M,
+                             want_block_sums=False)
+    g = psi.mean(2)                                   # (L, L), uniform over slices
+    g.fill_diagonal_(0.0)
+    tot = float(g.sum()) / 2.0                        # sum over unordered pairs
+    npair = Lb * (Lb - 1) / 2.0
+    u = tot / npair
+    rowsum = g.sum(1)                                 # (L,)
+    npair_i = (Lb - 1) * (Lb - 2) / 2.0
+    loo = (tot - rowsum.double()) / npair_i           # delete-one U-statistics
+    se = float(((Lb - 1) / Lb * ((loo - loo.mean()) ** 2).sum()).clamp_min(0).sqrt())
+    tq = _t975(Lb - 1)
+    return (math.sqrt(max(0.0, u)), math.sqrt(max(0.0, u - tq * se)),
+            math.sqrt(max(0.0, u + tq * se)))
 
 
 @torch.no_grad()
@@ -251,8 +248,8 @@ def stationarity_index(x: torch.Tensor, k: int = 5, grid: int = 4,
     strained: prefer image-split nulls and treat cross-pipeline comparisons
     with caution.
     """
-    C = x.shape[1]
-    w = make_bank("dct", None, k, C)
+    C_ = x.shape[1]
+    w = make_bank("dct", None, k, C_)
     dev = w.device
     acc = None
     for i in range(0, x.shape[0], batch):

@@ -159,21 +159,46 @@ def opponent_dct_bank(k: int, channels: int = 3, drop_dc: bool = True) -> torch.
     return _normalise(out)
 
 
-def make_bank(kind: str, n: int, k: int, channels: int = 1, **kw) -> torch.Tensor:
-    """Dispatch on a bank name: 'gauss' | 'ortho' | 'dct' | 'dctopp' | 'gabor'."""
+def _subsample(b: torch.Tensor, n: int | None, generator: torch.Generator | None,
+               seed: int) -> torch.Tensor:
+    """Keep `n` filters of a deterministic bank, chosen reproducibly.
+
+    `n = None` (or `n` at least the bank size) keeps the whole bank, which is
+    the default everywhere and involves no randomness at all.  When a strict
+    subset is asked for, the permutation is drawn from an EXPLICIT generator --
+    never from the global RNG, whose state the caller does not control, and
+    which made the bank silently depend on everything else the process had
+    drawn.  With no generator supplied the draw is made on the CPU from `seed`,
+    so the same subset is selected whether the bank lives on CPU or GPU.
+    """
+    if n is None or n >= b.shape[0]:
+        return b
+    if generator is None:
+        generator = torch.Generator().manual_seed(int(seed))
+    idx = torch.randperm(b.shape[0], device=generator.device, generator=generator)[:n]
+    return b[idx.to(b.device)]
+
+
+def make_bank(kind: str, n: int | None, k: int, channels: int = 1,
+              generator: torch.Generator | None = None, seed: int = 0,
+              **kw) -> torch.Tensor:
+    """Dispatch on a bank name: 'gauss' | 'ortho' | 'dct' | 'dctopp' | 'gabor'.
+
+    `generator` seeds the random banks and, for the deterministic DCT banks, the
+    choice of subset when `n` is smaller than the bank; `seed` is used to build
+    a CPU generator when none is given, so every bank is reproducible without
+    touching the global RNG.
+    """
     if kind == "gauss":
-        return gaussian_bank(n, k, channels, **kw)
+        return gaussian_bank(n, k, channels, generator=generator, **kw)
     if kind == "ortho":
-        return orthogonal_bank(n, k, channels, **kw)
-    if kind == "dct":
-        b = dct_bank(k, channels, **kw)
-        return b if n is None else b[torch.randperm(b.shape[0], device=b.device)[:n]]
+        return orthogonal_bank(n, k, channels, generator=generator, **kw)
     if kind == "gabor":
-        return gabor_bank(n, k, channels, **kw)
+        return gabor_bank(n, k, channels, generator=generator, **kw)
+    if kind == "dct":
+        return _subsample(dct_bank(k, channels, **kw), n, generator, seed)
     if kind == "dctopp":
-        b = opponent_dct_bank(k, channels, **kw)
-        return b if n is None or n >= b.shape[0] else \
-            b[torch.randperm(b.shape[0], device=b.device)[:n]]
+        return _subsample(opponent_dct_bank(k, channels, **kw), n, generator, seed)
     raise ValueError(f"unknown bank {kind!r}")
 
 
