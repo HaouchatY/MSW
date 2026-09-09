@@ -30,6 +30,7 @@ import torch
 import torch.nn.functional as F
 
 from . import components as C
+from .weights import slice_weights
 from .banks import make_bank
 from .core import get_device
 from .estimators import MultiScaleSW
@@ -190,20 +191,35 @@ def _diagnose(diag_z: dict, names: list[str], idx: list[int], pc: list[float]) -
 
 def distance(a: torch.Tensor, b: torch.Tensor, L: int = 16, seed: int = 0,
              levels: int | None = None, k: int = 5,
-             groups: int | None = None) -> tuple[float, float, float]:
+             groups: int | None = None, weighting: str = "P1s",
+             signed: bool = True) -> tuple[float, float, float]:
     """The plain (pseudo-)metric value with a 95% jackknife CI.
 
-    Returns (d, lo, hi): ``d`` is the floor-corrected multi-scale sliced distance
-    (zero in expectation when the two sets share a distribution) and [lo, hi] a
-    Student-t interval, so lo <= d <= hi.  The CI is on the METHOD'S value D --
-    it is NOT a certified bound on the true W2: D's frequency tilt means D can
-    exceed W2-bar on low-frequency differences.
+    Estimates ``sum_s lambda_s W2^2(mu_s^A, mu_s^B)`` over pooled slice
+    marginals and returns its signed square root with a delete-one-block
+    jackknife interval.
 
-    Since 0.2.0 the estimate is the U-statistic over all L(L-1)/2 pairs of image
-    blocks rather than the sum over L/2 disjoint pairs.  Both are unbiased for
-    the same quantity -- the value means exactly what it meant before -- but the
-    U-statistic is the lower-variance one, so the interval is tighter.  The
-    interval itself is a delete-one-block jackknife on that U-statistic.
+    ``weighting`` selects the FIXED convex weights.  The default ``"P1s"`` is
+    ``4**-l / sigmabar_s``: the frequency-flat factor divided by a canonical
+    per-slice response scale, frozen in ``msw.weights`` and measured once on
+    four reference corpora, so it never depends on the two datasets being
+    compared and the result stays a metric.  It certifies all nine benchmark
+    perturbations where the previous uniform weighting certified four, is
+    strictly monotone in perturbation size on every one of them, and tightens
+    the ratio to the true Wasserstein distance from [0.37, 2.55] to
+    [0.50, 0.95].  ``"uniform"`` reproduces the v0.2 value exactly;
+    ``"P2s"`` (``4**-l / sigmabar_s**2``) buys a little more resolution at the
+    cost of fidelity; ``"flat"`` is ``4**-l`` alone.
+
+    ``signed=True`` (default) returns ``sign(u) * sqrt(|u|)``.  The estimator is
+    centred at zero under the null, so half of all null draws give a negative
+    value; clamping them to zero -- what ``signed=False`` does -- hides that the
+    interval covers zero and makes an unresolvable comparison look like a
+    measured zero.  Identical inputs still give exactly 0.
+
+    Use this to ORDER differences.  To decide whether a difference exists at
+    all, use ``msw.test``: it may weight adaptively, which buys far more
+    sensitivity but forfeits the metric property.
 
     ``groups`` is a deprecated alias of ``L``.
     """
@@ -221,7 +237,9 @@ def distance(a: torch.Tensor, b: torch.Tensor, L: int = 16, seed: int = 0,
     psi, _, _ = C.block_rows(C.to_double(est.features(a[:n])),
                              C.to_double(est.features(b[:n])), Lb, M,
                              want_block_sums=False)
-    g = psi.mean(2)                                   # (L, L), uniform over slices
+    w = torch.tensor(slice_weights(channels, est.level_sizes, scheme=weighting),
+                     dtype=psi.dtype, device=psi.device)
+    g = (psi * w).sum(2)                              # (L, L), canonical weights
     g.fill_diagonal_(0.0)
     tot = float(g.sum()) / 2.0                        # sum over unordered pairs
     npair = Lb * (Lb - 1) / 2.0
@@ -231,8 +249,9 @@ def distance(a: torch.Tensor, b: torch.Tensor, L: int = 16, seed: int = 0,
     loo = (tot - rowsum.double()) / npair_i           # delete-one U-statistics
     se = float(((Lb - 1) / Lb * ((loo - loo.mean()) ** 2).sum()).clamp_min(0).sqrt())
     tq = _t975(Lb - 1)
-    return (math.sqrt(max(0.0, u)), math.sqrt(max(0.0, u - tq * se)),
-            math.sqrt(max(0.0, u + tq * se)))
+    root = (lambda v: math.copysign(math.sqrt(abs(v)), v)) if signed else \
+           (lambda v: math.sqrt(max(0.0, v)))
+    return (root(u), root(u - tq * se), root(u + tq * se))
 
 
 @torch.no_grad()

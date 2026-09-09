@@ -1,3 +1,36 @@
+## 0.3.0
+
+`distance` now weights slices by a canonical, frozen per-slice scale instead of
+weighting them all equally, and reports a signed value.
+
+The weights are `4**-l / sigmabar_s`, where `sigmabar_s` is the typical response
+scale of slice s measured once over four reference corpora (CelebA, CIFAR-10,
+DTD, power-law Gaussian fields, 32-256 px) and frozen in `msw.weights`.  They do
+not depend on the datasets being compared, so the result is still a metric.
+Equal weighting let a handful of loud slices drown the quiet ones that carry the
+signal.  Measured over the nine benchmark perturbations at N=500:
+
+* certifies 9 of 9 rows, against 4 of 9 before, and is 58x more sensitive on
+  geometric average;
+* strictly monotone in perturbation size on all nine rows, against six before,
+  and monotone within a single run far more often than FID, KID or CMMD;
+* the ratio to the true Wasserstein distance tightens from [0.37, 2.55] to
+  [0.50, 0.95];
+* ranking accuracy improves in every cell, most importantly across perturbation
+  families at N=1000: 0.72 -> 0.93, which is better than FID's 0.70.
+
+Recomputing the constants from eight different reference corpora leaves the
+certificates unchanged on 9 of 9 rows for five of them and moves one row by a
+single grid rung for the other three.
+
+`signed=True` (the new default) returns `sign(u) * sqrt(|u|)`.  The estimator is
+centred at zero under the null, so about half of all null draws are negative;
+clamping them to zero made an unresolvable comparison look like a measured zero.
+Identical inputs still give exactly 0.  `weighting="uniform", signed=False`
+reproduces 0.2.x exactly.
+
+`msw.test` is unchanged.
+
 ## 0.2.1
 
 Fix: a degenerate input (two identical datasets, a constant image, a

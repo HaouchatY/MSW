@@ -134,8 +134,11 @@ def test_equal_block_layout_is_enforced():
 def test_distance_ci_orders():
     a, b = smooth(32, seed=13), smooth(32, seed=14)
     d, lo, hi = msw.distance(a, b, groups=8)                 # deprecated alias of L
-    assert 0 <= lo <= hi and d >= 0
+    assert lo <= d <= hi                                     # signed: a null may sit below 0
     assert msw.distance(a, b, L=8) == (d, lo, hi)
+    assert msw.distance(a, a.clone())[0] == 0.0              # identical inputs: exactly 0
+    dn, lon, hin = msw.distance(a, b, signed=False)          # legacy clamped reading
+    assert 0 <= lon <= hin and dn >= 0
 
 
 def test_distance_tracks_a_real_difference():

@@ -17,7 +17,7 @@ the rank of the observed statistic in that orbit, exact in finite samples.  It
 is a real test at N = 8 images per side (256 group elements, granularity 1/256).
 """
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 from .core import get_device, set_device, w1d_quantile, w1d_sort, running_estimate
 from .banks import (Pyramid, dct_bank, gabor_bank, gaussian_bank, make_bank,
@@ -27,6 +27,7 @@ from .features import (SliceFeatures, balanced_blocked_values, blocked_values,
 from .estimators import (CSWSlicer, MultiScaleSW, PortfolioSW, SWSlicer,
                          aggregate, conv_sw, csw, sliced_wasserstein)
 from .testing import auc, combine, level_weights, maxlevel_z, power_at
+from .weights import slice_weights, SIGMA_SHAPE
 from .api import TestResult, distance, stationarity_index, test
 from .pairgroup import block_plan, patterns_for
 from .portfolio import Portfolio, core_columns, evaluate, portfolios
@@ -44,6 +45,7 @@ __all__ = [
     "SliceFeatures", "blocked_values", "balanced_blocked_values",
     "paired_values", "concat_features",
     "aggregate", "combine", "level_weights", "maxlevel_z", "power_at", "auc",
+    "slice_weights", "SIGMA_SHAPE",
     "sliced_wasserstein", "conv_sw", "csw",
     "w1d_sort", "w1d_quantile", "running_estimate",
     "Portfolio", "JointSW", "portfolios", "core_columns", "evaluate",
