@@ -207,9 +207,9 @@ def distance(a: torch.Tensor, b: torch.Tensor, L: int = 16, seed: int = 0,
     perturbations where the previous uniform weighting certified four, is
     strictly monotone in perturbation size on every one of them, and tightens
     the ratio to the true Wasserstein distance from [0.37, 2.55] to
-    [0.50, 0.95].  ``"uniform"`` reproduces the v0.2 value exactly;
-    ``"P2s"`` (``4**-l / sigmabar_s**2``) buys a little more resolution at the
-    cost of fidelity; ``"flat"`` is ``4**-l`` alone.
+    [0.50, 0.95].  ``"P2s"`` (``4**-l / sigmabar_s**2``) buys a little more
+    resolution at the cost of fidelity; ``"flat"`` is ``4**-l`` alone and
+    reproduces the v0.2 value exactly.  Any other string raises.
 
     ``signed=True`` (default) returns ``sign(u) * sqrt(|u|)``.  The estimator is
     centred at zero under the null, so half of all null draws give a negative

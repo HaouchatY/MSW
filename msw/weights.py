@@ -174,7 +174,13 @@ def slice_weights(channels: int, level_sizes: list[int], scheme: str = "P1s") ->
 
     Falls back to ``flat`` when the canonical table does not cover the
     configuration, so an unusual bank or depth still returns a valid metric.
+
+    Raises ``ValueError`` on an unrecognized scheme: silently treating it as the
+    default would return a different metric than the caller asked for.
     """
+    if scheme not in ("flat", "P1s", "P2s"):
+        raise ValueError(
+            f"unknown weighting {scheme!r}; expected one of 'P1s', 'P2s', 'flat'")
     lev = []
     for l, s in enumerate(level_sizes):
         lev += [l] * s
