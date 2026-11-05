@@ -1,0 +1,26 @@
+% Gaussian vs. a moment-matched mixture of four Gaussians (CMMD Table 2).
+% Markers: mean and sd over 5 repeats at n = 100,000; dashed: exact values.
+\ifdefined\cmmdw\else\newlength\cmmdw\fi
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=36pt},
+  mswbase, width=0.355\cmmdw, height=3.6cm,
+  xlabel={component offset $\lambda$}, xmin=-0.07, xmax=1.48, xtick={0,0.4,0.8,1.2},
+  scaled y ticks=false,
+  yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3},
+  legend cell align=left, legend style={at={(0.03,0.97)}, anchor=north west}]
+\nextgroupplot[title={Fr\'echet distance}, ymin=-0.004, ymax=0.04]
+\addplot[cfid] table[x=lam, y=fd, col sep=comma]{data/figure.csv};
+\addplot[cfid, densely dashed, mark=o, mark options={solid, fill=white}]
+  table[x=lam, y=fd_inf, col sep=comma]{data/figure.csv};
+\legend{FD, FD$_\infty$}
+\nextgroupplot[title={MMD ($\times 1000$)}]
+\addplot[guide, black!60] table[x=lam, y=mmd_pop, col sep=comma]{data/figure.csv};
+\addplot[ccmmd, only marks, error bars/.cd, y dir=both, y explicit]
+  table[x=lam, y=mmd, y error=mmd_sd, col sep=comma]{data/figure.csv};
+\nextgroupplot[title={MSW (ours)}]
+\addplot[guide, black!60] table[x=lam, y=msw_pop, col sep=comma]{data/figure.csv};
+\addplot[cours, only marks, error bars/.cd, y dir=both, y explicit]
+  table[x=lam, y=msw, y error=msw_sd, col sep=comma]{data/figure.csv};
+\end{groupplot}
+\end{tikzpicture}

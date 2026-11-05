@@ -1,0 +1,19 @@
+% aMUSEd-256 (open Muse) on the COCO-30k captions, the full-image prediction
+% after each of its 12 refinement iterations, against COCO-30k (CMMD Fig. 4).
+% Data: data/amused_iter.csv (figure.py).
+\ifdefined\cmmdw\else\newlength\cmmdw\fi
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=36pt},
+  mswbase, width=0.355\cmmdw, height=3.6cm,
+  xlabel={refinement iteration}, xmin=0.5, xmax=12.5, xtick={1,3,5,7,9,12},
+  scaled y ticks=false,
+  yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3}]
+\nextgroupplot[title={FID}]
+\addplot[cfid] table[x=x, y=fid, col sep=comma]{data/amused_iter.csv};
+\nextgroupplot[title={CMMD}]
+\addplot[ccmmd] table[x=x, y=cmmd, col sep=comma]{data/amused_iter.csv};
+\nextgroupplot[title={MSW (ours)}]
+\addplot[cours] table[x=x, y=msw, col sep=comma]{data/amused_iter.csv};
+\end{groupplot}
+\end{tikzpicture}

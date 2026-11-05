@@ -1,0 +1,16 @@
+% Shared preamble of every figure.tex: the paper's pgfplots style and a page
+% cropped to the figure (no standalone class needed).
+\documentclass{article}
+\usepackage{times,amsmath}
+\usepackage{tikz,pgfplots}
+\usetikzlibrary{calc,arrows.meta}
+\usepgfplotslibrary{groupplots}
+\input{../common/style}
+\newcommand\cmmdfixedwidth{17.46cm}   % the paper's text width
+\newsavebox\figbox
+\newcommand\cropfigure[1]{%
+  \savebox\figbox{\input{#1}}%
+  \pdfpagewidth=\dimexpr\wd\figbox+6pt\relax
+  \pdfpageheight=\dimexpr\ht\figbox+\dp\figbox+6pt\relax
+  \hoffset=-1in \voffset=-1in
+  \shipout\hbox{\kern3pt\vbox{\kern3pt\box\figbox\kern3pt}}}

@@ -1,0 +1,43 @@
+% Shared styles.  Palette: Okabe & Ito (2008), the standard colourblind-safe set;
+% ours is black and thickest so it reads first in grayscale print too.
+\definecolor{cbOrange}{RGB}{230,159,0}
+\definecolor{cbSky}{RGB}{86,180,233}
+\definecolor{cbGreen}{RGB}{0,158,115}
+\definecolor{cbBlue}{RGB}{0,114,178}
+\definecolor{cbVerm}{RGB}{213,94,0}
+\definecolor{cbPurple}{RGB}{204,121,167}
+\pgfplotsset{compat=1.17,
+  mswbase/.style={height=3.6cm,
+    log ticks with fixed point,
+    tick label style={font=\tiny}, label style={font=\scriptsize},
+    title style={font=\scriptsize, yshift=-2pt},
+    every axis title/.append style={font=\scriptsize},
+    xlabel style={yshift=3pt},
+    axis line style={black!60}, tick style={black!60},
+    grid=major, grid style={black!12, thin},
+    every axis plot/.append style={line width=0.8pt, mark size=1.1pt},
+    legend style={font=\tiny, /tikz/every even column/.append style={column sep=6pt}},
+    clip mode=individual},
+  msw/.style={mswbase, xmode=log, ymode=log, ymin=0.05, ymax=9000},
+  cours/.style={black, line width=1.4pt, mark=*, mark size=1.3pt},
+  cfid/.style={cbVerm, mark=square*},
+  ckid/.style={cbGreen, mark=triangle*},
+  ccmmd/.style={cbBlue, mark=diamond*},
+  cc2st/.style={cbPurple, mark=o},
+  csw/.style={black!45, densely dotted, mark=x},
+  ccsw/.style={cbSky, densely dashed, mark=+},
+  ccov/.style={cbOrange, mark=asterisk},
+  cstd/.style={black, line width=1.1pt, densely dashed, mark=*, mark options={fill=white}},
+  civ/.style={black!45, line width=0.8pt, mark=triangle, mark options={fill=white}},
+  cpswd/.style={cbVerm!60!black, densely dashed, mark=pentagon, mark options={fill=white, solid}},
+  cspec/.style={cbSky!70!black, densely dashdotted, mark=pentagon*, mark size=1.2pt},
+  cps/.style={cbGreen!55!black, dash dot dot, mark=halfcircle*, mark size=1.2pt},
+  cdino/.style={cbVerm, densely dashdotted, mark=square, mark options={fill=white, solid}},
+  thr/.style={black!70, dashed, thin, no marks, forget plot},
+  guide/.style={black!50, dash dot, thin, no marks, forget plot}}
+\newcommand{\grfspag}[2]{%
+\fill[red!70!black, opacity=0.08] (axis cs:0.007,-1.5) rectangle (axis cs:0.15,0.7501);
+\pgfplotsinvokeforeach{1,...,12}{%
+  \addplot[#2, opacity=0.5, thin, no marks] table[x=eps, y=r##1, col sep=comma]{data/#1.csv};}
+\addplot[thr] coordinates {(0.008,0.7501)(0.128,0.7501)};
+\addplot[black!70, thin, no marks, forget plot] coordinates {(0.008,0)(0.128,0)};}

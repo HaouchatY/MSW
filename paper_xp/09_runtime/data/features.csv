@@ -1,0 +1,6 @@
+y;label;ms
+0;MSW, 256 px;8.795
+1;MSW, 512 px;26.781
+2;Inception (FID);39.822
+3;CLIP-336 fp16 (CMMD);224.900
+4;CLIP-336 fp32;1022.509

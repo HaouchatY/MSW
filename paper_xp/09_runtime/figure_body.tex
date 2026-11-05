@@ -1,0 +1,22 @@
+% Runtime on one V100 (CMMD Table 4).  Left: features for one batch of 32
+% images.  Right: the distance between two sets of 30,000.  Medians of 5 runs.
+% Data: data/{features,distance}.csv (figure.py).
+\ifdefined\cmmdw\else\newlength\cmmdw\fi
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\pgfplotstableread[col sep=semicolon]{data/features.csv}\rtfeatures
+\pgfplotstableread[col sep=semicolon]{data/distance.csv}\rtdistance
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=100pt},
+  mswbase, width=0.36\cmmdw, height=3.4cm,
+  ytick=data, y dir=reverse, enlarge y limits=0.15,
+  yticklabel style={font=\scriptsize}, xmin=0, grid=none, xmajorgrids,
+  nodes near coords, nodes near coords align=horizontal, nodes near coords style={font=\tiny, /pgf/number format/fixed,
+    /pgf/number format/precision=1}, every axis plot/.append style={line width=0.4pt}]
+\nextgroupplot[xbar, bar width=6pt, point meta=rawx, title={features, batch of 32 images}, xlabel={ms}, xmode=log, xmin=4, xmax=4000,
+  log ticks with fixed point, yticklabels from table={\rtfeatures}{label}]
+\addplot[fill=black!25, draw=black!60] table[x=ms, y=y]{\rtfeatures};
+\nextgroupplot[xbar, bar width=6pt, point meta=rawx, title={distance, two sets of 30{,}000}, xlabel={s}, xmax=15,
+  yticklabels from table={\rtdistance}{label}]
+\addplot[fill=black!25, draw=black!60] table[x=s, y=y]{\rtdistance};
+\end{groupplot}
+\end{tikzpicture}

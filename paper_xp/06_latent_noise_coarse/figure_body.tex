@@ -1,0 +1,28 @@
+% VQGAN latent noise with 16-pixel tokens (aMUSEd-256 VQGAN, 16x16 tokens at
+% 256 px), a fraction p of the tokens replaced at random.  Top: COCO-30k against
+% clean COCO (CMMD Fig. 1).  Bottom: aMUSEd-256 images against COCO-30k (CMMD
+% Fig. 7).  Data: data/{coco,amused}.csv (figure.py).
+\ifdefined\cmmdw\else\newlength\cmmdw\fi
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 2, horizontal sep=36pt, vertical sep=14pt,
+    xlabels at=edge bottom, xticklabels at=edge bottom},
+  mswbase, width=0.345\cmmdw, height=3.2cm,
+  xlabel={fraction of tokens replaced $p$}, xmin=-0.015, xmax=0.415, xtick={0,0.1,0.2,0.3,0.4},
+  scaled ticks=false,
+  xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=1},
+  yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3}]
+\nextgroupplot[title={FID}, ylabel={COCO vs.\ clean}]
+\addplot[cfid] table[x=p, y=fid, col sep=comma]{data/coco.csv};
+\nextgroupplot[title={CMMD}]
+\addplot[ccmmd] table[x=p, y=cmmd, col sep=comma]{data/coco.csv};
+\nextgroupplot[title={MSW (ours)}]
+\addplot[cours] table[x=p, y=msw, col sep=comma]{data/coco.csv};
+\nextgroupplot[ylabel={aMUSEd vs.\ COCO}]
+\addplot[cfid] table[x=p, y=fid, col sep=comma]{data/amused.csv};
+\nextgroupplot
+\addplot[ccmmd] table[x=p, y=cmmd, col sep=comma]{data/amused.csv};
+\nextgroupplot
+\addplot[cours] table[x=p, y=msw, col sep=comma]{data/amused.csv};
+\end{groupplot}
+\end{tikzpicture}

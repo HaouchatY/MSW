@@ -1,0 +1,48 @@
+% Compensating degradations, in the two latent-noise settings of the CMMD paper,
+% with an 8-pixel VQGAN (VQ-Diffusion ITHQ, 64x64 tokens at 512 px -- the
+% granularity of Muse's 512-px stage); a fraction p of the tokens replaced at
+% random.  Left: COCO-30k against the clean images (CMMD Fig. 1).  Middle:
+% Stable Diffusion 1.4 images against COCO-30k (CMMD Fig. 7).  Both: change
+% from p = 0 in percent of each metric's own value.  Right: MSW's squared
+% distance u, change split exactly by pyramid level (COCO setting).
+% Data: data/comp_{coco,sd,levels}.csv.
+\ifdefined\cmmdw\else\newlength\cmmdw\fi  % set at every use: \setlength is local to the figure group
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=40pt},
+  mswbase, height=3.7cm, width=0.335\cmmdw,
+  legend cell align=left]
+\nextgroupplot[title={COCO vs.\ clean COCO},
+  xlabel={fraction of tokens replaced $p$}, ylabel={change (\%)},
+  xmin=-0.002, xmax=0.052, xtick={0,0.01,0.02,0.05}, scaled x ticks=false,
+  xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=2},
+  ymin=-12, ymax=95, legend style={at={(0.03,0.97)}, anchor=north west}]
+\addplot[thr, domain=-0.002:0.052]{0};
+\addplot[cfid] table[x=p, y=fid, col sep=comma]{data/comp_coco.csv};
+\addplot[ccmmd] table[x=p, y=cmmd, col sep=comma]{data/comp_coco.csv};
+\addplot[cours] table[x=p, y=msw, col sep=comma]{data/comp_coco.csv};
+\legend{FID, CMMD, MSW (ours)}
+\nextgroupplot[title={Stable Diffusion vs.\ COCO},
+  xlabel={fraction of tokens replaced $p$},
+  xmin=-0.006, xmax=0.206, xtick={0,0.05,0.1,0.2}, scaled x ticks=false,
+  xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=2},
+  ymin=-27, ymax=100]
+\addplot[thr, domain=-0.006:0.206]{0};
+\addplot[cfid] table[x=p, y=fid, col sep=comma]{data/comp_sd.csv};
+\addplot[ccmmd] table[x=p, y=cmmd, col sep=comma]{data/comp_sd.csv};
+\addplot[cours] table[x=p, y=msw, col sep=comma]{data/comp_sd.csv};
+\nextgroupplot[title={MSW: change of $u$ by level (COCO)},
+  ybar=0.6pt, bar width=3.6pt,
+  xlabel={pyramid level}, ylabel={change of $u$ ($\times 10^{-5}$)},
+  xtick={0,1,2,3,4,5}, xticklabels={0\\finest,1,2,3,4,5\\coarsest},
+  xticklabel style={align=center}, enlarge x limits=0.12,
+  legend to name=complevels, legend columns=3,
+  every axis plot/.append style={line width=0.3pt}]
+\addplot[fill=black!20, draw=black!50] table[x=level, y=d001, col sep=comma]{data/comp_levels.csv};
+\addplot[fill=black!50, draw=black!70] table[x=level, y=d002, col sep=comma]{data/comp_levels.csv};
+\addplot[fill=black!85, draw=black] table[x=level, y=d005, col sep=comma]{data/comp_levels.csv};
+\draw[black!60, thin] (rel axis cs:0,0) -- (rel axis cs:1,0);
+\legend{$p=0.01$, $p=0.02$, $p=0.05$}
+\end{groupplot}
+\node[anchor=north] at ($(group c3r1.south)+(0,-30pt)$) {\pgfplotslegendfromname{complevels}};
+\end{tikzpicture}

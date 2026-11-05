@@ -1,0 +1,37 @@
+% Stable Diffusion 1.4 against COCO-30k on random caption subsets of N images
+% (the same captions on both sides): the CMMD paper's Fig. 8 benchmark.  Points
+% are means over independent subsets, bars one standard deviation.  Right: each
+% metric relative to its value at the largest N.  Data: data/sample_size.csv.
+\ifdefined\cmmdw\else\newlength\cmmdw\fi  % set at every use: \setlength is local to the figure group
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\providecommand\cmmdSsTop{30k}
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=4 by 1, horizontal sep=34pt},
+  mswbase, width=0.268\cmmdw, height=3.6cm, xmode=log,
+  xtick={1000,2000,5000,10000,20000,30000},
+  xticklabels={1k,2k,5k,10k,20k,30k},
+  enlarge x limits=0.06,
+  xlabel={images per set $N$},
+  scaled y ticks=false,
+  yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3}]
+\nextgroupplot[title={FID}, ymin=0]
+\addplot[cfid, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=fid, y error=fid_sd, col sep=comma]{data/sample_size.csv};
+\nextgroupplot[title={CMMD}, ymin=0, ymax=0.7]
+\addplot[ccmmd, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=cmmd, y error=cmmd_sd, col sep=comma]{data/sample_size.csv};
+\nextgroupplot[title={MSW (ours)}, ymin=0, ymax=0.07]
+\addplot[cours, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=msw, y error=msw_sd, col sep=comma]{data/sample_size.csv};
+\nextgroupplot[title={relative to $N{=}\text{\cmmdSsTop}$},
+  ylabel={\% of that value}, ymin=50,
+  yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=0},
+  legend style={at={(0.97,0.97)}, anchor=north east}, legend cell align=left]
+\addplot[thr] table[x=N, y expr=100, col sep=comma]{data/sample_size.csv};
+\addplot[cfid] table[x=N, y=fid_rel, col sep=comma]{data/sample_size.csv};
+\addplot[ccmmd] table[x=N, y=cmmd_rel, col sep=comma]{data/sample_size.csv};
+\addplot[cours, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=msw_rel, y error=msw_rel_sd, col sep=comma]{data/sample_size.csv};
+\legend{FID, CMMD, MSW}
+\end{groupplot}
+\end{tikzpicture}

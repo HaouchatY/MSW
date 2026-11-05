@@ -1,0 +1,38 @@
+% Ordering the late Stable Diffusion iterations (95..100 of 100) from N images.
+% For each N, random subsets of N captions from a pool of 4,096; on each subset
+% all three metrics score the six iteration sets against the COCO images of the
+% same captions, on identical images.  Left: percentage of subsets on which the
+% metric orders all six sets correctly.  Right: percentage on which it gets the
+% subtlest step (99 -> 100) right.  Bars: 95% Wilson intervals.
+% Data: data/smalln.csv.
+\ifdefined\cmmdw\else\newlength\cmmdw\fi  % set at every use: \setlength is local to the figure group
+\ifdefined\cmmdfixedwidth\setlength\cmmdw{\cmmdfixedwidth}\else\setlength\cmmdw{\linewidth}\fi
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=40pt},
+  mswbase, height=3.7cm, width=0.45\cmmdw,
+  xmode=log, log basis x=2, xtick={8,16,32,64,128,256,512},
+  xticklabels={8,16,32,64,128,256,512}, enlarge x limits=0.05,
+  xlabel={images per set $N$}, ymin=0, ymax=104,
+  ytick={0,25,50,75,100}, legend cell align=left]
+\nextgroupplot[title={all six iterations in the right order}, ylabel={subsets (\%)},
+  legend to name=smallnlegend, legend columns=3]
+\addplot[cfid, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=fid_perf, y error plus=fid_perf_ep, y error minus=fid_perf_em, col sep=comma]{data/smalln.csv};
+\addplot[ccmmd, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=cmmd_perf, y error plus=cmmd_perf_ep, y error minus=cmmd_perf_em, col sep=comma]{data/smalln.csv};
+\addplot[cours, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=msw_perf, y error plus=msw_perf_ep, y error minus=msw_perf_em, col sep=comma]{data/smalln.csv};
+\legend{FID, CMMD, MSW (ours)}
+\nextgroupplot[title={subtlest step, iteration 99 $\to$ 100}]
+\addplot[thr] table[x=N, y expr=50, col sep=comma]{data/smalln.csv};
+\addplot[cfid, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=fid_last, y error plus=fid_last_ep, y error minus=fid_last_em, col sep=comma]{data/smalln.csv};
+\addplot[ccmmd, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=cmmd_last, y error plus=cmmd_last_ep, y error minus=cmmd_last_em, col sep=comma]{data/smalln.csv};
+\addplot[cours, error bars/.cd, y dir=both, y explicit]
+  table[x=N, y=msw_last, y error plus=msw_last_ep, y error minus=msw_last_em, col sep=comma]{data/smalln.csv};
+\node[font=\tiny, black!60, anchor=south west] at (axis cs:8.3,50) {chance};
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south)!0.5!(group c2r1.south)+(0,-26pt)$)
+  {\pgfplotslegendfromname{smallnlegend}};
+\end{tikzpicture}

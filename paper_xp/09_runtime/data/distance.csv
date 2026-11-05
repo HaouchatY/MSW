@@ -1,0 +1,5 @@
+y;label;s
+0;Fr\'echet, GPU;0.579
+1;MMD, GPU (CMMD);2.093
+2;Fr\'echet, SciPy CPU;9.896
+3;MSW, 512 px;12.321
