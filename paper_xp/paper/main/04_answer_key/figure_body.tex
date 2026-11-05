@@ -1,0 +1,76 @@
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=42pt},
+  mswbase, width=0.46\linewidth, height=3.6cm, legend cell align=left]
+\nextgroupplot[title={analytic answer key (GRF): $\mathrm{MSW}$ distance}, xmode=log,
+  xlabel={true $\overline{W}_2$ (closed form)},
+  ylabel={normalized response}, ymin=-0.22, ymax=1.46,
+  ytick={0,0.25,0.5,0.75,1},
+  xmin=0.021, xmax=0.33, xtick={0.025,0.05,0.1,0.2,0.28},
+  xticklabels={.025,.05,.10,.20,.28},
+  legend to name=killerlegend, legend columns=5, legend style={font=\tiny},
+  legend columns=6,
+  legend entries={FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW,
+    spectrum (oracle at left), pSWD, P--S, MSW (ours)}]
+\addplot[cfid]  table[x=w2,y=fid, col sep=comma]{data/killer_key_v2.csv};
+\addplot[ckid]  table[x=w2,y=kid, col sep=comma]{data/killer_key_v2.csv};
+\addplot[ccmmd] table[x=w2,y=cmmd,col sep=comma]{data/killer_key_v2.csv};
+\addplot[cdino] table[x=w2,y=dino,col sep=comma]{data/killer_key_v2.csv};
+\addplot[cc2st] table[x=w2,y=c2st,col sep=comma]{data/killer_key_v2.csv};
+\addplot[ccov]  table[x=w2,y=coverage,col sep=comma]{data/killer_key_v2.csv};
+\addplot[csw]   table[x=w2,y=sw,  col sep=comma]{data/killer_key_v2.csv};
+\addplot[ccsw]  table[x=w2,y=csw, col sep=comma]{data/killer_key_v2.csv};
+\addplot[cspec] table[x=w2,y=spec,col sep=comma]{data/killer_key_v2.csv};
+\addplot[cpswd] table[x=w2,y=pswd,col sep=comma]{data/killer_key_v2.csv};
+\addplot[cps]   table[x=w2,y=ps,  col sep=comma]{data/killer_key_v2.csv};
+\addplot[cours, error bars/.cd, y dir=both, y explicit]
+  table[x=w2,y=ours,y error=ours_err,col sep=comma]{data/killer_key_v2.csv};
+% the one disclosed discordance: mid band 3-8 cyc at Wbar2 = 0.12, which now
+% OVER-reads against the low-band point at 0.14 (under the superseded flat
+% weighting it under-read against the 0.10 point).
+\addplot[black, only marks, mark=o, mark size=2.4pt, line width=1.1pt,
+         forget plot, error bars/.cd, y dir=both, y explicit]
+  table[x=w2,y=ours,y error=ours_err,col sep=comma]{data/killer_key_mid.csv};
+\addplot[black!70, densely dashed, line width=0.7pt, no marks, forget plot]
+  coordinates {(0.120,0.4719)(0.140,0.4296)};
+\addplot[guide] table[x=w2,y=truth,col sep=comma]{data/killer_key_v2.csv};
+\node[font=\tiny, anchor=west, black!60] at (axis cs:0.026,0.24) {true $\overline{W}_2$};
+\node[font=\tiny, anchor=north west, align=left, black] at (axis cs:0.0225,1.44)
+  {distance: $\tau_{7}={+}1.000$,\ $\tau_{8}={+}0.929$\\
+   {\color{black!55}test statistic: $\tau_{7}={-}0.238$}};
+\node[font=\tiny, anchor=south east, black] at (axis cs:0.327,-0.215)
+  {$\circ$\,= mid band $3$--$8$\,cyc: the one discordance};
+%
+\nextgroupplot[title={real images, exact $W_2$: calibration}, xmode=normal,
+  xlabel={true $\overline{W}_2$ (Brenier, exact)},
+  ylabel={metric / its own slope}, ymin=0, ymax=0.075, xmin=0, xmax=0.075,
+  xtick={0,0.03,0.06}, ytick={0,0.03,0.06},
+  scaled x ticks=false, scaled y ticks=false,
+  xticklabel style={/pgf/number format/fixed},
+  yticklabel style={/pgf/number format/fixed}]
+% +-1 null sd of the MSW estimator (0.00289 in MSW units / 0.6056 slope
+% = 0.00477 in W2 units, measured on 40 CelebA nulls at N=800): below this the
+% estimator cannot resolve a difference at all.
+\addplot[name path=lo, draw=none, domain=0:0.075, samples=2]{max(x-0.00477,0)};
+\addplot[name path=hi, draw=none, domain=0:0.075, samples=2]{x+0.00477};
+\addplot[black!8, forget plot] fill between[of=lo and hi];
+\addplot[guide, domain=0:0.075]{x};
+\addplot[only marks, mark=square*, mark size=1.0pt, cbVerm]
+  table[x=w2,y=fid,col sep=comma]{data/calib_struct.csv};
+\addplot[only marks, mark=triangle*, mark size=1.2pt, cbGreen]
+  table[x=w2,y=kid,col sep=comma]{data/calib_struct.csv};
+\addplot[only marks, mark=diamond*, mark size=1.2pt, cbBlue]
+  table[x=w2,y=cmmd,col sep=comma]{data/calib_struct.csv};
+\addplot[only marks, mark=o, mark size=1.2pt, cbOrange]
+  table[x=w2,y=dino,col sep=comma]{data/calib_struct.csv};
+\addplot[only marks, mark=pentagon, mark size=1.3pt, cbSky]
+  table[x=w2,y=spec,col sep=comma]{data/calib_struct.csv};
+\addplot[only marks, mark=*, mark size=1.3pt, black]
+  table[x=w2,y=msw,col sep=comma]{data/calib_struct.csv};
+\node[font=\tiny, anchor=north west, align=left, black] at (axis cs:0.002,0.073)
+  {$R^2$ on the $21$ pairs drawn:\\ \textbf{MSW 0.99}\\
+   {\color{cbSky}spectrum 0.95}\\
+   {\color{black!55}DINOv2 0.71}};
+\end{groupplot}
+\node[anchor=north] at ($(group c2r1.south)+(0,-30pt)$)
+  {\pgfplotslegendfromname{killerlegend}};
+\end{tikzpicture}

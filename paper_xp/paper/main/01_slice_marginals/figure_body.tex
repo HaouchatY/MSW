@@ -1,0 +1,50 @@
+% One row: pooled marginal of the high-frequency 5x5 DCT slice (atom (4,4), level 0).
+% The CelebA-noise panel uses the R-G CHROMA slice (portfolio's quiet-band family):
+% clean chroma is narrow, tiny noise widens it visibly -- the mechanism behind eps*=0.0005.
+% under six perturbation families, three strengths each. All curves normalized by the
+% CLEAN marginal's std (per panel), 500 images x 28^2 positions pooled per curve.
+% blue ramp: light = clean, mid = mild, dark = strong; log density.
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=6 by 1, horizontal sep=3.5mm,
+                  ylabels at=edge left, yticklabels at=edge left},
+  mswbase, width=4cm, height=3.5cm,
+  ymode=log, ymin=1e-4, ymax=100,
+  ytick={0.0001,0.01,1}, yticklabels={$10^{-4}$,$10^{-2}$,$1$},
+  ylabel={marginals}, unbounded coords=jump, no marks,
+  every axis title/.append style={font=\scriptsize},
+  legend style={draw=none, fill=none, font=\tiny, inner sep=1pt,
+    legend columns=3, /tikz/every even column/.append style={column sep=0.5pt},
+    legend image code/.code={\draw[##1] plot coordinates {(0cm,0cm)(0.08cm,0cm)};}},
+  legend cell align=left]
+\nextgroupplot[title={fields, slope}, xmin=-5, xmax=5, xtick={-4,0,4},
+  legend style={at={(0.5,0.99)}, anchor=north}]
+\addplot[cbBlue!40, thin]  table[x=x, y=c0, col sep=comma]{data/margrow_grf_slope.csv}; \addlegendentry{$0$}
+\addplot[cbBlue!70, thin] table[x=x, y=c1, col sep=comma]{data/margrow_grf_slope.csv}; \addlegendentry{$0.26$}
+\addplot[cbBlue!60!black, thin] table[x=x, y=c2, col sep=comma]{data/margrow_grf_slope.csv}; \addlegendentry{$1$}
+\nextgroupplot[title={$t_3$ fields, slope}, xmin=-8, xmax=8, xtick={-6,0,6},
+  legend style={at={(0.5,0.99)}, anchor=north}]
+\addplot[cbBlue!40, thin]  table[x=x, y=c0, col sep=comma]{data/margrow_t3_slope.csv}; \addlegendentry{$0$}
+\addplot[cbBlue!70, thin] table[x=x, y=c1, col sep=comma]{data/margrow_t3_slope.csv}; \addlegendentry{$0.26$}
+\addplot[cbBlue!60!black, thin] table[x=x, y=c2, col sep=comma]{data/margrow_t3_slope.csv}; \addlegendentry{$1$}
+\nextgroupplot[title={fields, marginal}, xmin=-8, xmax=8, xtick={-6,0,6},
+  legend style={at={(0.5,0.99)}, anchor=north}]
+\addplot[cbBlue!40, thin]  table[x=x, y=c0, col sep=comma]{data/margrow_grf_marginal.csv}; \addlegendentry{G}
+\addplot[cbBlue!70, thin] table[x=x, y=c1, col sep=comma]{data/margrow_grf_marginal.csv}; \addlegendentry{$t_8$}
+\addplot[cbBlue!60!black, thin] table[x=x, y=c2, col sep=comma]{data/margrow_grf_marginal.csv}; \addlegendentry{$t_3$}
+\nextgroupplot[title={CelebA, noise (chroma)}, xmin=-12, xmax=12, xtick={-8,0,8},
+  legend style={at={(0.5,0.99)}, anchor=north}]
+\addplot[cbBlue!40, thin]  table[x=x, y=c0, col sep=comma]{data/margrow_cel_noise.csv}; \addlegendentry{$0$}
+\addplot[cbBlue!70, thin] table[x=x, y=c1, col sep=comma]{data/margrow_cel_noise.csv}; \addlegendentry{$0.0025$}
+\addplot[cbBlue!60!black, thin] table[x=x, y=c2, col sep=comma]{data/margrow_cel_noise.csv}; \addlegendentry{$0.005$}
+\nextgroupplot[title={CelebA, blur}, xmin=-5, xmax=5, xtick={-4,0,4},
+  legend style={at={(0.5,0.99)}, anchor=north}]
+\addplot[cbBlue!40, thin]  table[x=x, y=c0, col sep=comma]{data/margrow_cel_blur.csv}; \addlegendentry{$0$}
+\addplot[cbBlue!70, thin] table[x=x, y=c1, col sep=comma]{data/margrow_cel_blur.csv}; \addlegendentry{$0.33$}
+\addplot[cbBlue!60!black, thin] table[x=x, y=c2, col sep=comma]{data/margrow_cel_blur.csv}; \addlegendentry{$0.75$}
+\nextgroupplot[title={CIFAR-10, checker}, xmin=-10, xmax=10, xtick={-8,0,8},
+  legend style={at={(0.5,0.99)}, anchor=north}]
+\addplot[cbBlue!40, thin]  table[x=x, y=c0, col sep=comma]{data/margrow_cif_checker.csv}; \addlegendentry{$0$}
+\addplot[cbBlue!70, thin] table[x=x, y=c1, col sep=comma]{data/margrow_cif_checker.csv}; \addlegendentry{$0.01$}
+\addplot[cbBlue!60!black, thin] table[x=x, y=c2, col sep=comma]{data/margrow_cif_checker.csv}; \addlegendentry{$0.02$}
+\end{groupplot}
+\end{tikzpicture}

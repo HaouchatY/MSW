@@ -1,0 +1,15 @@
+\begin{tabular}{lccccccccccccc}
+\toprule
+Setting & FID & KID & CMMD & DINOv2 & C2ST & coverage & SW & CSW & pSWD & spec. & P--S & P--S$^\star$ & MSW \\
+\midrule
+Fields, slope & 1024 & 256 & 512 & 1024 & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & 64 & 16 & $\mathbf{8}$ \\
+Fields, noise & $>$ & 512 & 256 & 512 & 1024 & $>$ & $>$ & $>$ & $>$ & $>$ & 64 & 16 & $\mathbf{8}$ \\
+Fields, marginal (1/df) & 512 & 1024 & 512 & 512 & $>$ & $>$ & $>$ & $>$ & 256 & $>$ & 512 & 512 & $\mathbf{32}$ \\
+t3 fields, slope & 128 & 128 & 128 & 512 & 256 & $>$ & $>$ & $>$ & $>$ & 512 & 256 & 128 & $\mathbf{64}$ \\
+CelebA, blur & 256 & 128 & 128 & 64 & 128 & $>$ & $>$ & $>$ & $>$ & 1024 & 256 & 32 & $\mathbf{8}$ \\
+CelebA, added noise & $>$ & $>$ & 512 & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $\mathbf{8}$ \\
+CelebA, shading & 64 & 64 & 64 & 128 & 64 & 256 & 1024 & $>$ & 1024 & 512 & 64 & $\mathbf{16}$ & $\mathbf{16}$ \\
+CIFAR-10, blur & 1024 & 512 & 128 & 1024 & 512 & $>$ & $>$ & 1024 & $>$ & 512 & 256 & 64 & $\mathbf{16}$ \\
+CIFAR-10, checkerboard & 512 & 128 & 1024 & $>$ & 256 & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $\mathbf{8}$ \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,12 @@
+msw @ git+https://github.com/HaouchatY/MSW@15ed21cd53abd0a037a4efdc56a7d93c7bda5bcd
+torch==2.10.0
+numpy==2.0.2
+scipy==1.17.1
+pillow==12.1.1
+pyarrow==25.0.1
+# baselines (common/baselines.py)
+pytorch-fid==0.3.0
+open_clip_torch==3.3.0
+transformers==5.16.1
+plenoptic==2.1.0
+datasets            # main/05 prep only: streams COCO from Hugging Face
