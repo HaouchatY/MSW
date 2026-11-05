@@ -1,0 +1,21 @@
+{
+ "n": 2048,
+ "ours_fid_AB": 24.429358517189712,
+ "ours_fid_ABn": 32.725954429161675,
+ "ours_kid_AB": 7.348775863647461e-05,
+ "ours_kid_ABn": 0.009169719219207763,
+ "ours_density_AB": 0.944042980670929,
+ "ours_coverage_AB": 0.9619140625,
+ "ptfid_AB": 24.429030366501024,
+ "ptfid_ABn": 32.72583894791006,
+ "tf_fid_AB": 24.543525915306873,
+ "tf_kid_AB": 4.080772399902344e-05,
+ "tf_fid_ABn": 32.87554843806555,
+ "tf_kid_ABn": 0.009307310581207276,
+ "prdc_density_AB": 0.94404296875,
+ "prdc_coverage_AB": 0.9619140625,
+ "dino_straight_fd_AB": 246.79100207295642,
+ "dino_straight_fd_ABn": 261.3857541266234,
+ "dino_cropref_fd_AB": 251.25198019094205,
+ "dino_cropref_fd_ABn": 264.63699280892024
+}

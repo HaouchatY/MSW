@@ -1,0 +1,6 @@
+setting,ps_plain,ps_std,msw_T,ratio_std_over_T
+fields_slope,0.032,0.016,0.008,2
+fields_marginal,>1/12,>1/12,1/48,>4
+celeba_noise,>0.005,>0.005,0.0005,>10
+celeba_shading,0.08,0.02,0.08,0.25
+cifar_checker,>0.01,>0.01,0.01,>1

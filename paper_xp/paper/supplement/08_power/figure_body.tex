@@ -1,0 +1,32 @@
+% Power against images per set at a fixed perturbation.  Ours: exact msw.test,
+% reject at p <= 0.05, 100 alternative reps per rung (no curve until the rerun exists).
+% Baselines: archived exp26 curves, 20 reps, threshold mean + 1.645 sd of their null.
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=8pt, ylabels at=edge left},
+  mswbase, width=8.5cm, unbounded coords=jump, xmode=log, ymin=-0.03, ymax=1.06,
+  xtick={25,50,100,200,500,1000}, xticklabels={25,50,100,200,500,1000},
+  ytick={0,0.5,0.8,1}, xlabel={images per set}, ylabel={power}]
+\nextgroupplot[title={fields: slope $0.032$}]
+\fill[red!70!black, opacity=0.08] (axis cs:25,-0.03) rectangle (axis cs:1000,0.8);
+\addplot[cfid]  table[x=n, y=fid,  col sep=comma]{data/power_fields_slope.csv};
+\addplot[ckid]  table[x=n, y=kid,  col sep=comma]{data/power_fields_slope.csv};
+\addplot[ccmmd] table[x=n, y=cmmd, col sep=comma]{data/power_fields_slope.csv};
+\addplot[cdino] table[x=n, y=dino, col sep=comma]{data/power_fields_slope.csv};
+\addplot[cc2st] table[x=n, y=c2st, col sep=comma]{data/power_fields_slope.csv};
+\addplot[csw]   table[x=n, y=sw,   col sep=comma]{data/power_fields_slope.csv};
+\addplot[ccsw]  table[x=n, y=csw,  col sep=comma]{data/power_fields_slope.csv};
+\addplot[cours] table[x=n, y=ours, col sep=comma]{data/power_fields_slope.csv};
+\addplot[thr] coordinates {(25,0.8)(1000,0.8)};
+\nextgroupplot[title={CelebA: blur $0.33$}, yticklabels={}]
+\fill[red!70!black, opacity=0.08] (axis cs:25,-0.03) rectangle (axis cs:1000,0.8);
+\addplot[cfid]  table[x=n, y=fid,  col sep=comma]{data/power_celeba_blur.csv};
+\addplot[ckid]  table[x=n, y=kid,  col sep=comma]{data/power_celeba_blur.csv};
+\addplot[ccmmd] table[x=n, y=cmmd, col sep=comma]{data/power_celeba_blur.csv};
+\addplot[cdino] table[x=n, y=dino, col sep=comma]{data/power_celeba_blur.csv};
+\addplot[cc2st] table[x=n, y=c2st, col sep=comma]{data/power_celeba_blur.csv};
+\addplot[csw]   table[x=n, y=sw,   col sep=comma]{data/power_celeba_blur.csv};
+\addplot[ccsw]  table[x=n, y=csw,  col sep=comma]{data/power_celeba_blur.csv};
+\addplot[cours] table[x=n, y=ours, col sep=comma]{data/power_celeba_blur.csv};
+\addplot[thr] coordinates {(25,0.8)(1000,0.8)};
+\end{groupplot}
+\end{tikzpicture}

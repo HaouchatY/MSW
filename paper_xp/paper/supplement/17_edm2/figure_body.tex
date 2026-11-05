@@ -1,0 +1,66 @@
+% fig_edm2: EDM2 snapshots (thumbnails), z vs real, adjacent unpaired, adjacent paired.
+% Series are signed deflections floored at 0.06 on the log axis (see figure.py).
+\parbox{17cm}{\centering
+\resizebox{0.6\linewidth}{!}{%
+\begin{tikzpicture}[x=1mm, y=1mm, every node/.style={inner sep=0}]
+  \foreach \i/\p in {0/2, 1/6, 2/25, 3/50, 4/100}{
+    \node at (16*\i, 0) {\includegraphics[width=15mm, height=15mm]{data/edm_\p.png}};
+    \node[font=\tiny, anchor=north] at (16*\i, -8) {\p\%};}
+\end{tikzpicture}}\\[2pt]
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=10pt,
+    yticklabels at=edge left},
+  width=0.42\linewidth, height=4.0cm,
+  every axis title/.append style={font=\scriptsize}]
+\nextgroupplot[mswbase, xmode=log, ymode=log, title={$z$ vs real}, xlabel={\% trained}, ymin=0.04, ymax=2000,
+  xtick={2,6,25,100}, ylabel={$z$, $N{=}512$}]
+\addplot[cfid]  table[x=pct,y=fid, col sep=comma]{data/edm_rungs.csv};
+\addplot[ckid]  table[x=pct,y=kid, col sep=comma]{data/edm_rungs.csv};
+\addplot[ccmmd] table[x=pct,y=cmmd,col sep=comma]{data/edm_rungs.csv};
+\addplot[cc2st] table[x=pct,y=c2st,col sep=comma]{data/edm_rungs.csv};
+\addplot[ccov]  table[x=pct,y=coverage,col sep=comma]{data/edm_rungs.csv};
+\addplot[csw]   table[x=pct,y=sw,  col sep=comma]{data/edm_rungs.csv};
+\addplot[ccsw]  table[x=pct,y=csw, col sep=comma]{data/edm_rungs.csv};
+\addplot[cours] table[x=pct,y=ours,col sep=comma]{data/edm_rungs.csv};
+\addplot[cstd]  table[x=pct,y=ours_dist,col sep=comma]{data/edm_rungs.csv};
+\nextgroupplot[mswbase, ymode=log, title={adjacent snapshots, $N{=}384$}, xlabel={pair}, ymin=0.04, ymax=2000,
+  xmin=0.5, xmax=4.5, xtick={1,2,3,4},
+  xticklabels={2:6,6:25,25:50,50:100},
+  x tick label style={font=\tiny, rotate=38, anchor=north east, yshift=2pt},
+  legend to name=edmlegend, legend columns=4, legend style={font=\tiny},
+  legend columns=5,
+  legend entries={FID, KID, CMMD, C2ST, coverage, SW, CSW,
+    MSW statistic $T$ (ours), MSW distance (ours)}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.5,0.04) rectangle (axis cs:4.5,2.4865);
+\addplot[thr] coordinates {(0.5,2.4865)(4.5,2.4865)};
+\addplot[cfid]  table[x=i,y=fid, col sep=comma]{data/edm_pairs.csv};
+\addplot[ckid]  table[x=i,y=kid, col sep=comma]{data/edm_pairs.csv};
+\addplot[ccmmd] table[x=i,y=cmmd,col sep=comma]{data/edm_pairs.csv};
+\addplot[cc2st] table[x=i,y=c2st,col sep=comma]{data/edm_pairs.csv};
+\addplot[ccov]  table[x=i,y=coverage,col sep=comma]{data/edm_pairs.csv};
+\addplot[csw]   table[x=i,y=sw,  col sep=comma]{data/edm_pairs.csv};
+\addplot[ccsw]  table[x=i,y=csw, col sep=comma]{data/edm_pairs.csv};
+\addplot[cours] table[x=i,y=ours,col sep=comma]{data/edm_pairs.csv};
+\addlegendimage{cstd}   % legend slot only: the distance ladder is measured on the
+                        % rungs, so it has no series in this panel
+\nextgroupplot[mswbase, ymode=log, title={adjacent, paired seeds}, xlabel={pair}, ymin=0.04, ymax=2000,
+  xmin=0.5, xmax=4.5, xtick={1,2,3,4},
+  xticklabels={2:6,6:25,25:50,50:100},
+  x tick label style={font=\tiny, rotate=38, anchor=north east, yshift=2pt},
+  legend style={font=\tiny, fill opacity=0.85, at={(0.03,0.03)},
+    anchor=south west, row sep=0pt,
+    text opacity=1, inner sep=1.5pt}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.5,0.04) rectangle (axis cs:4.5,2.4865);
+\addplot[thr] coordinates {(0.5,2.4865)(4.5,2.4865)};
+\addplot[ccmmd, densely dashed] table[x=i,y=clip, col sep=comma]{data/edm_paired.csv};
+\addlegendentry{CLIP}
+\addplot[cfid, densely dashed]  table[x=i,y=incep,col sep=comma]{data/edm_paired.csv};
+\addlegendentry{Inception}
+\addplot[cours] table[x=i,y=ours, col sep=comma]{data/edm_paired.csv};
+\addlegendentry{ours}
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south)!0.5!(group c3r1.south)+(0,-26pt)$)
+  {\pgfplotslegendfromname{edmlegend}};
+\end{tikzpicture}}
+}

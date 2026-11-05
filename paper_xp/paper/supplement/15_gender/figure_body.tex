@@ -1,0 +1,39 @@
+% Aligned CelebA gender (exp51 protocol).  Left: natural mixture vs females only;
+% right: males vs females.  |z| = |mean_alt - mean_null| / sd_null per rung; ours
+% on msw.test's T (bounded by its orbit, so read threshold crossings, not heights;
+% exact-test power is in data/gender_*.csv).  Dashed: |z| = 2.4865, power 0.8 at
+% one-sided 0.05 under a normal approximation.
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=9pt,
+    ylabels at=edge left, yticklabels at=edge left},
+  msw, width=8.5cm, height=4.2cm, ymin=0.4, ymax=600,
+  xlabel={$N$ per set}, ylabel={$|z|$}, unbounded coords=jump,
+  every axis title/.append style={font=\scriptsize}]
+\nextgroupplot[title={drop males from the mixture}]
+\fill[red!70!black, opacity=0.08] (axis cs:110,0.4) rectangle (axis cs:4700,2.4865);
+\addplot[thr] coordinates {(110,2.4865)(4700,2.4865)};
+\addplot[cfid]  table[x=n,y=fid, col sep=comma]{data/gender_drop.csv};
+\addplot[ckid]  table[x=n,y=kid, col sep=comma]{data/gender_drop.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/gender_drop.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/gender_drop.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/gender_drop.csv};
+\addplot[csw]   table[x=n,y=sw,  col sep=comma]{data/gender_drop.csv};
+\addplot[ccsw]  table[x=n,y=csw, col sep=comma]{data/gender_drop.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/gender_drop.csv};
+\nextgroupplot[title={males vs females}, legend to name=genderlegend, legend columns=4,
+  legend style={font=\tiny},
+  legend entries={FID, KID, CMMD, C2ST, coverage, SW, CSW, MSW (ours)}]
+\fill[red!70!black, opacity=0.08] (axis cs:110,0.4) rectangle (axis cs:4700,2.4865);
+\addplot[thr] coordinates {(110,2.4865)(4700,2.4865)};
+\addplot[cfid]  table[x=n,y=fid, col sep=comma]{data/gender_pure.csv};
+\addplot[ckid]  table[x=n,y=kid, col sep=comma]{data/gender_pure.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/gender_pure.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/gender_pure.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/gender_pure.csv};
+\addplot[csw]   table[x=n,y=sw,  col sep=comma]{data/gender_pure.csv};
+\addplot[ccsw]  table[x=n,y=csw, col sep=comma]{data/gender_pure.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/gender_pure.csv};
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south east)!0.5!(group c2r1.south west)+(0,-26pt)$)
+  {\pgfplotslegendfromname{genderlegend}};
+\end{tikzpicture}

@@ -1,0 +1,19 @@
+% The nine settings; one draw per column, clean (top) and perturbed (bottom).
+% Display strengths are visible by eye, far above the detection thresholds.
+\begin{tikzpicture}[x=1mm, y=1mm, every node/.style={inner sep=0}]
+  % 9 columns, 4 groups: fields(3) | t3(1) | CelebA(3) | CIFAR(2); tile 17mm
+  \foreach \i/\x/\lab in {1/8.5/{slope $+1.0$}, 2/26.5/{noise $\sigma{=}0.32$}, 3/44.5/{marginal $t_3$},
+                          4/64.5/{slope $+1.0$},
+                          5/84.5/{blur $\sigma{=}0.75$}, 6/102.5/{noise $\sigma{=}0.08$}, 7/120.5/{shading $\varepsilon{=}0.32$},
+                          8/140.5/{blur $\sigma{=}0.75$}, 9/158.5/{checker $\varepsilon{=}0.02$}}{
+    \node at (\x,-8.5)  {\includegraphics[width=17mm, height=17mm]{data/c\i_clean.png}};
+    \node at (\x,-26.5) {\includegraphics[width=17mm, height=17mm]{data/c\i_pert.png}};
+    \node[font=\scriptsize, anchor=base, text depth=0pt] at (\x,-38.7) {\lab};}
+  \node[font=\scriptsize\itshape] at (26.5,1.8) {fields ($\beta{=}3$)};
+  \node[font=\scriptsize\itshape] at (64.5,1.8) {$t_3$ field};
+  \node[font=\scriptsize\itshape] at (102.5,1.8) {CelebA};
+  \node[font=\scriptsize\itshape] at (149.5,1.8) {CIFAR-10};
+  \foreach \x in {54.5, 74.5, 130.5} \draw[black!40, thin] (\x,-35.5) -- (\x,0.5);
+  \node[font=\scriptsize, rotate=90] at (-2.5,-8.5)  {clean};
+  \node[font=\scriptsize, rotate=90] at (-2.5,-26.5) {perturbed};
+\end{tikzpicture}

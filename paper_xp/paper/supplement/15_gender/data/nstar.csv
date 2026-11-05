@@ -1,0 +1,17 @@
+contrast,method,nstar_power,nstar_absz
+drop,fid,128,128
+drop,kid,128,128
+drop,cmmd,128,128
+drop,c2st,512,512
+drop,coverage,128,128
+drop,sw,1024,1024
+drop,csw,512,1024
+drop,msw,256,256
+pure,fid,128,128
+pure,kid,128,128
+pure,cmmd,128,128
+pure,c2st,128,128
+pure,coverage,128,128
+pure,sw,128,128
+pure,csw,256,256
+pure,msw,128,128

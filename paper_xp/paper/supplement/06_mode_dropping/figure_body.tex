@@ -1,0 +1,53 @@
+% fig:modedrop.  |z| against N per set: semantic modes (CIFAR-10 classes, stationarized
+% CelebA gender) and statistical modes (a mixture of ten field models), half the modes
+% dropped.  Baselines: |dmean| / null sd; MSW: deflection of msw.test's T.  Shaded: |z| < 1.645.
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=9pt,
+    ylabels at=edge left, yticklabels at=edge left},
+  msw, width=0.34\textwidth, height=4.2cm, ymin=0.05, ymax=400,
+  xlabel={$N$ per set}, ylabel={$|z|$}, unbounded coords=jump,
+  every axis title/.append style={font=\scriptsize}]
+\nextgroupplot[title={semantic: CIFAR-10 classes ($5/10$)}, xmin=170, xmax=2400,
+  xtick={200,500,1000,2000}, xticklabels={200,500,1000,2000}]
+\fill[red!70!black, opacity=0.08] (axis cs:170,0.05) rectangle (axis cs:2400,1.645);
+\addplot[thr] coordinates {(170,1.645)(2400,1.645)};
+\addplot[cfid]  table[x=n,y=fid, col sep=comma]{data/md_cifar.csv};
+\addplot[ckid]  table[x=n,y=kid, col sep=comma]{data/md_cifar.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/md_cifar.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/md_cifar.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/md_cifar.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/md_cifar.csv};
+\addplot[csw]   table[x=n,y=sw,  col sep=comma]{data/md_cifar.csv};
+\addplot[ccsw]  table[x=n,y=csw, col sep=comma]{data/md_cifar.csv};
+\IfFileExists{data/ours_md_cifar.csv}{\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ours_md_cifar.csv};}{\addlegendimage{cours}}
+\nextgroupplot[title={semantic: CelebA gender (stationarized)}, xmin=430, xmax=4700,
+  xtick={512,1024,2048,4096}, xticklabels={512,1024,2048,4096}]
+\fill[red!70!black, opacity=0.08] (axis cs:430,0.05) rectangle (axis cs:4700,1.645);
+\addplot[thr] coordinates {(430,1.645)(4700,1.645)};
+\addplot[cfid]  table[x=n,y=fid, col sep=comma]{data/gender_stat.csv};
+\addplot[ckid]  table[x=n,y=kid, col sep=comma]{data/gender_stat.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/gender_stat.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/gender_stat.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/gender_stat.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/gender_stat.csv};
+\addplot[csw]   table[x=n,y=sw,  col sep=comma]{data/gender_stat.csv};
+\addplot[ccsw]  table[x=n,y=csw, col sep=comma]{data/gender_stat.csv};
+\IfFileExists{data/ours_md_gender.csv}{\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ours_md_gender.csv};}{\addlegendimage{cours}}
+\nextgroupplot[title={statistical: field models ($5/10$)}, xmin=170, xmax=2400,
+  xtick={200,500,1000,2000}, xticklabels={200,500,1000,2000},
+  legend to name=mdlegendnew, legend columns=9, legend style={font=\tiny},
+  legend entries={FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW, MSW (ours)}]
+\fill[red!70!black, opacity=0.08] (axis cs:170,0.05) rectangle (axis cs:2400,1.645);
+\addplot[thr] coordinates {(170,1.645)(2400,1.645)};
+\addplot[cfid]  table[x=n,y=fid, col sep=comma]{data/md_fields.csv};
+\addplot[ckid]  table[x=n,y=kid, col sep=comma]{data/md_fields.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/md_fields.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/md_fields.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/md_fields.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/md_fields.csv};
+\addplot[csw]   table[x=n,y=sw,  col sep=comma]{data/md_fields.csv};
+\addplot[ccsw]  table[x=n,y=csw, col sep=comma]{data/md_fields.csv};
+\IfFileExists{data/ours_md_fields.csv}{\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ours_md_fields.csv};}{\addlegendimage{cours}}
+\end{groupplot}
+\node[anchor=north] at ($(group c2r1.south)+(0,-26pt)$) {\pgfplotslegendfromname{mdlegendnew}};
+\end{tikzpicture}

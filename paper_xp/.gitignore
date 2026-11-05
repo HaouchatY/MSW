@@ -3,3 +3,5 @@ __pycache__/
 *.aux
 *.log
 !figure.png
+paper/supplement/17_edm2/results/feats/
+paper/supplement/26_implementation_check/results/png*/

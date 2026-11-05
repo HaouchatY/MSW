@@ -1,0 +1,41 @@
+% Zero floor: |mean - ideal| / sd of each metric's null reading against N.
+% Baselines: exp22, 15 null draws per N.  MSW: u behind msw.distance, 300 null
+% draws per N (CelebA: fixed disjoint halves solid, fresh random split dashed).
+% Green band: < 2 sd.  Values below the axis floor are drawn at the floor.
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=8pt, ylabels at=edge left},
+  msw, width=8.4cm, height=4.8cm, ymin=0.02, ymax=250, ytick={0.1,1,10,100}, xmin=6, xmax=13000, xlabel={$N$ per set},
+  ylabel={$|\bar{M}-\mathrm{ideal}|\,/\,\mathrm{sd}$}]
+\nextgroupplot[title={Gaussian fields}]
+\fill[green!55!black, opacity=0.12] (axis cs:6,0.02) rectangle (axis cs:13000,2);
+\addplot[cfid]  table[x=n, y=fid,  col sep=comma]{data/null_grf.csv};
+\addplot[ckid]  table[x=n, y=kid,  col sep=comma]{data/null_grf.csv};
+\addplot[ccmmd] table[x=n, y=cmmd, col sep=comma]{data/null_grf.csv};
+\addplot[cdino] table[x=n, y=dino, col sep=comma]{data/null_grf.csv};
+\addplot[cc2st] table[x=n, y=c2st, col sep=comma]{data/null_grf.csv};
+\addplot[ccov]  table[x=n, y=coverage, col sep=comma]{data/null_grf.csv};
+\addplot[csw]   table[x=n, y=sw,   col sep=comma]{data/null_grf.csv};
+\addplot[ccsw]  table[x=n, y=csw,  col sep=comma]{data/null_grf.csv};
+\addplot[cours] table[x=n, y=off, col sep=comma]{data/null_ours_fields.csv};
+\addplot[thr] coordinates {(8,2)(10000,2)};
+\nextgroupplot[title={CelebA}, yticklabels={},
+  legend to name=nullfloorlegend, legend columns=5,
+  legend entries={FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW,
+                  MSW, MSW (CelebA fresh split)}]
+\fill[green!55!black, opacity=0.12] (axis cs:6,0.02) rectangle (axis cs:13000,2);
+\addplot[cfid]  table[x=n, y=fid,  col sep=comma]{data/null_celeba.csv};
+\addplot[ckid]  table[x=n, y=kid,  col sep=comma]{data/null_celeba.csv};
+\addplot[ccmmd] table[x=n, y=cmmd, col sep=comma]{data/null_celeba.csv};
+\addplot[cdino] table[x=n, y=dino, col sep=comma]{data/null_celeba.csv};
+\addplot[cc2st] table[x=n, y=c2st, col sep=comma]{data/null_celeba.csv};
+\addplot[ccov]  table[x=n, y=coverage, col sep=comma]{data/null_celeba.csv};
+\addplot[csw]   table[x=n, y=sw,   col sep=comma]{data/null_celeba.csv};
+\addplot[ccsw]  table[x=n, y=csw,  col sep=comma]{data/null_celeba.csv};
+\addplot[cours] table[x=n, y=off, col sep=comma]{data/null_ours_celeba32.csv};
+\addplot[cours, densely dashed, mark options={solid, fill=white}]
+  table[x=n, y=off, col sep=comma]{data/null_ours_celeba32rs.csv};
+\addplot[thr] coordinates {(8,2)(10000,2)};
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south east)!0.5!(group c2r1.south west) + (0,-24pt)$)
+  {\pgfplotslegendfromname{nullfloorlegend}};
+\end{tikzpicture}

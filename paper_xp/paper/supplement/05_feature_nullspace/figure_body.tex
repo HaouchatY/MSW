@@ -1,0 +1,53 @@
+% Feature nullspace: a green-magenta Nyquist checker on the R-G opponent axis of
+% ImageNet-256 images (eps = 0.02), |z| deflection against N (left), and a blur
+% 0.5 px control through the same pipeline at N = 500 (right).  Shaded: below the
+% paper's certification threshold |z| = 2.4865.
+\begin{tabular}{@{}c@{}}
+\begin{tikzpicture}[x=1mm, y=1mm, every node/.style={inner sep=0}]
+  \node at (0, 0) {\includegraphics[width=15mm, height=15mm]{data/chk_clean.png}};
+  \node at (16, 0) {\includegraphics[width=15mm, height=15mm]{data/chk_clean_zoom.png}};
+  \node at (32, 0) {\includegraphics[width=15mm, height=15mm]{data/chk_e02_zoom.png}};
+  \node at (48, 0) {\includegraphics[width=15mm, height=15mm]{data/chk_e04_zoom.png}};
+  \node[font=\tiny, anchor=north] at (0, -8) {clean};
+  \node[font=\tiny, anchor=north] at (16, -8) {zoom, clean};
+  \node[font=\tiny, anchor=north] at (32, -8) {$\varepsilon{=}0.02$};
+  \node[font=\tiny, anchor=north] at (48, -8) {$\varepsilon{=}0.04$};
+\end{tikzpicture}\\[2pt]
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=34pt},
+  mswbase, width=9cm, height=4.0cm]
+\nextgroupplot[title={chroma checker $\varepsilon{=}0.02$: $|z|$ vs $N$},
+  xmode=log, ymode=log, xlabel={$N$ (images per set)},
+  ymin=0.04, ymax=300, xmin=55, xmax=2400,
+  xtick={64,128,500,2000}, xticklabels={64,128,500,2000},
+  legend to name=nulllegend, legend columns=5, legend style={font=\tiny},
+  legend entries={FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW, MSW (ours)}]
+\fill[red!70!black, opacity=0.08] (axis cs:55,0.04) rectangle (axis cs:2400,2.4865);
+\addplot[thr] coordinates {(55,2.4865)(2400,2.4865)};
+\addplot[cfid]  table[x=n,y=fid, col sep=comma]{data/killer_nullspace.csv};
+\addplot[ckid]  table[x=n,y=kid, col sep=comma]{data/killer_nullspace.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/killer_nullspace.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/killer_nullspace.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/killer_nullspace.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/killer_nullspace.csv};
+\addplot[csw]   table[x=n,y=sw,  col sep=comma]{data/killer_nullspace.csv};
+\addplot[ccsw]  table[x=n,y=csw, col sep=comma]{data/killer_nullspace.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/killer_nullspace.csv};
+\nextgroupplot[title={control: blur, $N{=}500$}, ymode=log,
+  xlabel={}, ymin=0.04, ymax=300, xmin=0.4, xmax=9.6,
+  xtick={1,...,9},
+  xticklabels={FID,KID,CMMD,DINO,C2ST,cov.,SW,CSW,ours},
+  x tick label style={font=\tiny, rotate=38, anchor=north east, yshift=2pt}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.4,0.04) rectangle (axis cs:9.6,2.4865);
+\addplot[thr] coordinates {(0.4,2.4865)(9.6,2.4865)};
+\addplot[only marks, mark=square, mark size=2pt, black!45, line width=0.9pt]
+  table[x=i,y=blur,col sep=comma]{data/killer_nullctrl.csv};
+\addplot[only marks, mark=*, mark size=1.8pt, black]
+  table[x=i,y=chroma,col sep=comma]{data/killer_nullctrl.csv};
+\node[font=\tiny, black!55, anchor=west] at (axis cs:3.5,163) {blur $0.5$};
+\node[font=\tiny, anchor=east] at (axis cs:8.75,25.6) {checker $\varepsilon{=}0.02$};
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south)!0.5!(group c2r1.south)+(0,-26pt)$)
+  {\pgfplotslegendfromname{nulllegend}};
+\end{tikzpicture}
+\end{tabular}

@@ -1,0 +1,9 @@
+quantity,ours,official,package,rel_gap
+FID (null pair),24.4293585,24.4290304,pytorch-fid,1.34e-05
+FID (noise pair),32.7259544,32.7258389,pytorch-fid,3.53e-06
+density,0.944042981,0.944042969,prdc,1.26e-08
+coverage,0.961914062,0.961914062,prdc,0
+FID (null pair),24.4293585,24.5435259,torch-fidelity,0.00465
+FID (noise pair),32.7259544,32.8755484,torch-fidelity,0.00455
+KID (null pair),7.34877586e-05,4.0807724e-05,torch-fidelity,0.801
+KID (noise pair),0.00916971922,0.00930731058,torch-fidelity,0.0148

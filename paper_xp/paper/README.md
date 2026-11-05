@@ -8,6 +8,7 @@ One folder per figure or table. Each holds the code that reproduces it (`run.py`
 | [main/02](main/02_detection_thresholds) | Table 1 — detection thresholds at N = 500 |
 | [main/03](main/03_images_needed) | Table 2 — images needed |
 | [main/04](main/04_answer_key) | Fig. 3 — ordering and calibration against a known answer |
+| [main/05](main/05_pipeline_audit) | Table 3 — which preprocessing pipeline made these images? |
 
 Every MSW number is recomputed with the public library (`msw`, pinned in `requirements.txt`): `msw.test` for detection, `msw.distance` for ordering. Baseline columns are the values of the original runs (`results/baselines.json`); `common/baselines.py` recomputes them identically.
 

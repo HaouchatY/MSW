@@ -1,0 +1,71 @@
+% Real generators: sample tiles, distance to real along the DDPM and DCGAN ladders
+% (N = 1024), adjacent checkpoints (N = 128).  Every series is a deflection z
+% against the real-vs-real null; ours twice: T (solid) and msw.distance (dashed).
+\begin{minipage}{\linewidth}\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[x=1mm, y=1mm, every node/.style={inner sep=0}]
+  \foreach \i/\s in {0/2, 1/5, 2/10, 3/20, 4/50}{
+    \node at (13*\i, 0) {\includegraphics[width=12mm, height=12mm]{data/gen_ddpm_\s.png}};
+    \node[font=\tiny, anchor=north] at (13*\i, -6.5) {$S{=}\s$};}
+  \foreach \i/\s in {0/200, 1/500, 2/1000, 3/2000, 4/5000, 5/10000}{
+    \node at (88 + 13*\i, 0) {\includegraphics[width=12mm, height=12mm]{data/gen_gan_\s.png}};
+    \node[font=\tiny, anchor=north] at (88 + 13*\i, -6.5) {\s};}
+\end{tikzpicture}}\\[2pt]
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=24pt},
+  unbounded coords=jump, width=0.30\textwidth, height=4.2cm,
+  every axis title/.append style={font=\scriptsize}]
+\nextgroupplot[mswbase, xmode=log, ymode=log, title={DDPM, DDIM steps $S$}, xlabel={$S$}, ylabel={$z$ vs real, $N{=}1024$},
+  ymin=1, ymax=4000, ytick={1,10,100,1000}, yticklabels={$1$,$10$,$10^2$,$10^3$},
+  xtick={2,5,10,20,50}, xticklabels={2,5,10,20,50}]
+\addplot[cfid]  table[x=x,y=fid, col sep=comma]{data/gen_ddpm.csv};
+\addplot[ckid]  table[x=x,y=kid, col sep=comma]{data/gen_ddpm.csv};
+\addplot[ccmmd] table[x=x,y=cmmd,col sep=comma]{data/gen_ddpm.csv};
+\addplot[cdino] table[x=x,y=dino,col sep=comma]{data/gen_ddpm.csv};
+\addplot[cc2st] table[x=x,y=c2st,col sep=comma]{data/gen_ddpm.csv};
+\addplot[ccov]  table[x=x,y=coverage,col sep=comma]{data/gen_ddpm.csv};
+\addplot[csw]   table[x=x,y=sw,  col sep=comma]{data/gen_ddpm.csv};
+\addplot[ccsw]  table[x=x,y=csw, col sep=comma]{data/gen_ddpm.csv};
+\addplot[cours] table[x=x,y=ours,col sep=comma]{data/gen_ddpm.csv};
+\addplot[cstd]  table[x=x,y=ours_dist,col sep=comma]{data/gen_ddpm.csv};
+\nextgroupplot[mswbase, xmode=log, ymode=log, title={DCGAN, training step}, xlabel={step},
+  ymin=1, ymax=20000, ytick={1,100,10000}, yticklabels={$1$,$10^2$,$10^4$},
+  xtick={200,1000,10000}, xticklabels={200,$10^3$,$10^4$},
+  legend to name=genlegend, legend columns=5, legend style={font=\tiny},
+  legend columns=5,
+  legend entries={FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW,
+    MSW statistic $T$ (ours), MSW distance (ours)}]
+\addplot[cfid]  table[x=x,y=fid, col sep=comma]{data/gen_gan.csv};
+\addplot[ckid]  table[x=x,y=kid, col sep=comma]{data/gen_gan.csv};
+\addplot[ccmmd] table[x=x,y=cmmd,col sep=comma]{data/gen_gan.csv};
+\addplot[cdino] table[x=x,y=dino,col sep=comma]{data/gen_gan.csv};
+\addplot[cc2st] table[x=x,y=c2st,col sep=comma]{data/gen_gan.csv};
+\addplot[ccov]  table[x=x,y=coverage,col sep=comma]{data/gen_gan.csv};
+\addplot[csw]   table[x=x,y=sw,  col sep=comma]{data/gen_gan.csv};
+\addplot[ccsw]  table[x=x,y=csw, col sep=comma]{data/gen_gan.csv};
+\addplot[cours] table[x=x,y=ours,col sep=comma]{data/gen_gan.csv};
+\addplot[cstd]  table[x=x,y=ours_dist,col sep=comma]{data/gen_gan.csv};
+\nextgroupplot[mswbase, ymode=log, title={adjacent checkpoints, $N{=}128$}, xlabel={pair},
+  ymin=0.05, ymax=1000, xmin=0.5, xmax=9.5,
+  ylabel={$z$, checkpoint pair}, xtick={1,2,3,4,5,6,7,8,9},
+  xticklabels={2:5,5:10,10:20,20:50,.2:.5,.5:1,1:2,2:5,5:10},
+  x tick label style={font=\tiny, rotate=55, anchor=east},
+  ytick={0.1,10,1000}, yticklabels={$0.1$,$10$,$10^3$}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.5,0.05) rectangle (axis cs:9.5,2.4865);
+\addplot[thr] coordinates {(0.5,2.4865)(9.5,2.4865)};
+\draw[black!40, thin] (axis cs:4.5,0.05) -- (axis cs:4.5,1000);
+\addplot[cfid]  table[x=i,y=fid, col sep=comma]{data/gen_pairs128.csv};
+\addplot[ckid]  table[x=i,y=kid, col sep=comma]{data/gen_pairs128.csv};
+\addplot[ccmmd] table[x=i,y=cmmd,col sep=comma]{data/gen_pairs128.csv};
+\addplot[cdino] table[x=i,y=dino,col sep=comma]{data/gen_pairs128.csv};
+\addplot[cc2st] table[x=i,y=c2st,col sep=comma]{data/gen_pairs128.csv};
+\addplot[ccov]  table[x=i,y=coverage,col sep=comma]{data/gen_pairs128.csv};
+\addplot[csw]   table[x=i,y=sw,  col sep=comma]{data/gen_pairs128.csv};
+\addplot[ccsw]  table[x=i,y=csw, col sep=comma]{data/gen_pairs128.csv};
+\addplot[cours] table[x=i,y=ours,col sep=comma]{data/gen_pairs128.csv};
+\end{groupplot}
+\node[anchor=north] at ($(group c2r1.south)+(0,-26pt)$)
+  {\pgfplotslegendfromname{genlegend}};
+\end{tikzpicture}}
+\end{minipage}

@@ -1,0 +1,37 @@
+% Matched-moment contrast mixtures: one field at the ensemble's 5th / 95th contrast
+% percentile (top), deflection z at N = 500 per method (bottom; dashed z = 1.645,
+% red: undetected).  Spectrum, P-S and patch SWD were measured at df = 8, 4 only.
+\begin{tabular}{@{}c@{}}
+\begin{tikzpicture}[x=1.32cm, y=1.32cm, every node/.style={inner sep=0}]
+  \foreach \x/\f/\t in {0/camo_gauss/{Gauss}, 1/camo_t48/{$t_{48}$}, 2/camo_t16/{$t_{16}$},
+                        3/camo_t8/{$t_{8}$}, 4/camo_t4/{$t_{4}$}}{
+    \node at (\x,0.5) {\includegraphics[width=1.25cm, height=1.25cm]{data/\f_a.png}};
+    \node at (\x,-0.5) {\includegraphics[width=1.25cm, height=1.25cm]{data/\f_b.png}};
+    \node[font=\scriptsize, anchor=base] at (\x,-1.24) {\t};}
+  \node[font=\tiny, black!60, rotate=90, anchor=south] at (-0.72,0.5) {5th pct};
+  \node[font=\tiny, black!60, rotate=90, anchor=south] at (-0.72,-0.5) {95th pct};
+\end{tikzpicture}\\[4pt]
+\begin{tikzpicture}
+\begin{axis}[mswbase, width=12cm, height=4.0cm,
+  xmode=log, ymode=log, ymin=0.05, ymax=400, unbounded coords=discard,
+  xlabel={df of the contrast mixing (right = heavier tails)},
+  ylabel={$z$ at $N{=}500$}, x dir=reverse,
+  log ticks with fixed point, xtick={4,8,16,48}, xticklabels={4,8,16,48},
+  legend columns=6, legend style={font=\tiny, at={(0.5,-0.36)}, anchor=north, draw=none}]
+\fill[red!70!black, opacity=0.08] (axis cs:4,0.05) rectangle (axis cs:48,1.645);
+\addplot[black!70, thin, dashed, no marks, forget plot] coordinates {(4,1.645)(48,1.645)};
+\addplot[cfid]  table[x=df, y=fid,  col sep=comma]{data/camo_n500.csv}; \addlegendentry{FID}
+\addplot[ckid]  table[x=df, y=kid,  col sep=comma]{data/camo_n500.csv}; \addlegendentry{KID}
+\addplot[ccmmd] table[x=df, y=cmmd, col sep=comma]{data/camo_n500.csv}; \addlegendentry{CMMD}
+\addplot[cdino] table[x=df, y=dino, col sep=comma]{data/camo_n500.csv}; \addlegendentry{DINOv2}
+\addplot[cc2st] table[x=df, y=c2st, col sep=comma]{data/camo_n500.csv}; \addlegendentry{C2ST}
+\addplot[csw]   table[x=df, y=sw,   col sep=comma]{data/camo_n500.csv}; \addlegendentry{SW}
+\addplot[ccsw]  table[x=df, y=csw,  col sep=comma]{data/camo_n500.csv}; \addlegendentry{CSW}
+\addplot[cpswd] table[x=df, y=pswd, col sep=comma]{data/camo_n500.csv}; \addlegendentry{pSWD}
+\addplot[cspec] table[x=df, y=spec, col sep=comma]{data/camo_n500.csv}; \addlegendentry{spec.}
+\addplot[cps]   table[x=df, y=ps,   col sep=comma]{data/camo_n500.csv}; \addlegendentry{P--S}
+\IfFileExists{data/camo_ours_detail.csv}{%
+\addplot[cours] table[x=df, y=ours, col sep=comma]{data/camo_n500.csv}; \addlegendentry{MSW (ours)}}{}
+\end{axis}
+\end{tikzpicture}
+\end{tabular}

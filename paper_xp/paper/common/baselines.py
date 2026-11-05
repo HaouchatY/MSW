@@ -188,10 +188,11 @@ def c2st(f1, f2, seed, epochs=300, lr=1e-2, wd=1e-2):
     w = torch.zeros(x.shape[1], 1, device=DEV, requires_grad=True)
     b = torch.zeros(1, device=DEV, requires_grad=True)
     opt = torch.optim.Adam([w, b], lr=lr, weight_decay=wd)
-    for _ in range(epochs):
-        opt.zero_grad()
-        F.binary_cross_entropy_with_logits((xtr @ w).squeeze(1) + b, ytr).backward()
-        opt.step()
+    with torch.enable_grad():                 # callers may run under no_grad
+        for _ in range(epochs):
+            opt.zero_grad()
+            F.binary_cross_entropy_with_logits((xtr @ w).squeeze(1) + b, ytr).backward()
+            opt.step()
     with torch.no_grad():
         return ((((xte @ w).squeeze(1) + b) > 0).float() == yte).float().mean().item()
 

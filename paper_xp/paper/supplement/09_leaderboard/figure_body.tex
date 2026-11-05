@@ -1,0 +1,38 @@
+% Ordering accuracy against the exact-W2 answer key: fraction of model pairs
+% ordered correctly (ties 0.5), mean over 15 repetitions; within family (5 pairs)
+% and across families (40 pairs).  Dashed line chance, red band worse than chance.
+\newcommand{\leadplots}[1]{%
+\addplot[cfid]  table[x=n, y=fid,  col sep=comma]{data/#1};
+\addplot[ckid]  table[x=n, y=kid,  col sep=comma]{data/#1};
+\addplot[ccmmd] table[x=n, y=cmmd, col sep=comma]{data/#1};
+\addplot[cdino] table[x=n, y=dino, col sep=comma]{data/#1};
+\addplot[cc2st] table[x=n, y=c2st, col sep=comma]{data/#1};
+\addplot[ccov]  table[x=n, y=coverage, col sep=comma]{data/#1};
+\addplot[csw]   table[x=n, y=sw,   col sep=comma]{data/#1};
+\addplot[ccsw]  table[x=n, y=csw,  col sep=comma]{data/#1};
+\addplot[cours] table[x=n, y=ours, col sep=comma]{data/#1};
+\addplot[cstd]  table[x=n, y=ours_dist, col sep=comma]{data/#1};
+\addplot[cspec] table[x=n, y=spec, col sep=comma]{data/#1};
+\addplot[cpswd] table[x=n, y=pswd, col sep=comma]{data/#1};
+\addplot[cps]   table[x=n, y=ps,   col sep=comma]{data/#1};}
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=8pt, ylabels at=edge left},
+  mswbase, width=9cm, height=4.1cm, xmode=log, unbounded coords=discard,
+  ymin=0.4, ymax=1.03, ytick={0.5,0.75,1}, xlabel={$N$ per set},
+  xtick={50,100,250,1000}, xticklabels={50,100,250,1000},
+  ylabel={ordering accuracy}]
+\nextgroupplot[title={within family (severity ladders)}]
+\fill[red!70!black, opacity=0.08] (axis cs:45,0.4) rectangle (axis cs:1100,0.5);
+\addplot[black!70, thin, dashed, no marks, forget plot] coordinates {(45,0.5)(1100,0.5)};
+\leadplots{lead_within.csv}
+\nextgroupplot[title={across families}, yticklabels={},
+  legend to name=leadlegend, legend columns=5,
+  legend entries={FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW,
+    MSW statistic $T$ (ours), MSW distance (ours), spectrum, pSWD, P--S}]
+\fill[red!70!black, opacity=0.08] (axis cs:45,0.4) rectangle (axis cs:1100,0.5);
+\addplot[black!70, thin, dashed, no marks, forget plot] coordinates {(45,0.5)(1100,0.5)};
+\leadplots{lead_cross.csv}
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south east)!0.5!(group c2r1.south west)+(0,-24pt)$)
+  {\pgfplotslegendfromname{leadlegend}};
+\end{tikzpicture}

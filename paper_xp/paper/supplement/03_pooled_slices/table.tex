@@ -1,0 +1,51 @@
+\begin{tabular}{lccccccc}
+\toprule
+ & \multicolumn{4}{c}{generic two-sample test on the pooled slices} & \multicolumn{2}{c}{ours} & best generic \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-7}
+Setting & KS-max & MMD & energy & $W_2$ & transport only & MSW (CORE) & $/$ MSW \\
+\midrule
+\multicolumn{8}{l}{\emph{(a) matched budget: $2048$ subsampled points per side per slice, as in the previous version}}\\
+Fields, slope & $0.064$ & $0.064$ & $0.064$ & $\mathbf{0.032}$ & $0.008$ & $0.008$ & $4\times$ \\
+Fields, marginal & $\mathbf{1/12}$ & $\mathbf{1/12}$ & $\mathbf{1/12}$ & $\mathbf{1/12}$ & $1/48$ & $1/192$ & $16\times$ \\
+CelebA, noise & $\mathbf{0.00125}$ & $\mathbf{0.00125}$ & $\mathbf{0.00125}$ & $\mathbf{0.00125}$ & $5\!\cdot\!10^{-4}$ & $5\!\cdot\!10^{-4}$ & $2.5\times$ \\
+CelebA, blur & $0.22$ & $0.22$ & $\mathbf{0.15}$ & $\mathbf{0.15}$ & $0.1$ & $0.1$ & $1.5\times$ \\
+CelebA, shading & $\mathbf{0.08}$ & $\mathbf{0.08}$ & $\mathbf{0.08}$ & $\mathbf{0.08}$ & $0.08$ & $0.02$ & $4\times$ \\
+CIFAR-10, checker & $\mathbf{0.00125}$ & $0.0025$ & $0.005$ & $0.02$ & $0.01$ & $6.25\!\cdot\!10^{-4}$ & $2\times$ \\
+\midrule
+\multicolumn{8}{l}{\emph{(b) the generic tests at $4\times$ the budget ($8192$ points per side per slice); ours unchanged}}\\
+Fields, slope & $0.064$ & $\mathbf{0.032}$ & $\mathbf{0.032}$ & $\mathbf{0.032}$ & \textemdash & \textemdash & $4\times$ \\
+Fields, marginal & $1/12$ & $\mathbf{1/24}$ & $\mathbf{1/24}$ & $\mathbf{1/24}$ & \textemdash & \textemdash & $8\times$ \\
+CelebA, noise & $0.00125$ & $0.00125$ & $\mathbf{5\!\cdot\!10^{-4}}$ & $\mathbf{5\!\cdot\!10^{-4}}$ & \textemdash & \textemdash & $1\times$ \\
+CelebA, blur & $0.15$ & $0.15$ & $0.15$ & $\mathbf{0.1}$ & \textemdash & \textemdash & $1\times$ \\
+CelebA, shading & $\mathbf{0.04}$ & $0.08$ & $\mathbf{0.04}$ & $0.08$ & \textemdash & \textemdash & $2\times$ \\
+CIFAR-10, checker & $\mathbf{0.00125}$ & $0.0025$ & $0.0025$ & $0.01$ & \textemdash & \textemdash & $2\times$ \\
+\bottomrule
+\end{tabular}
+
+\begin{tabular}{lcccccc}
+\toprule
+Setting & KS-max & MMD & energy & $W_2$ & transport only & MSW (CORE) \\
+\midrule
+\multicolumn{7}{l}{\emph{(c) $\varepsilon_{0.8}$ of CORE with only its transport rows swapped (TL$+$PX$+$J kept)}}\\
+Fields, slope & $0.064$ & $0.064$ & $0.064$ & $0.032$ & \textemdash & $0.008$ \\
+Fields, marginal & $1/192$ & $1/192$ & $1/192$ & $1/192$ & \textemdash & $1/192$ \\
+CelebA, noise & $0.00125$ & $0.00125$ & $0.00125$ & $0.00125$ & \textemdash & $5\!\cdot\!10^{-4}$ \\
+CelebA, blur & $0.15$ & $0.15$ & $0.15$ & $0.15$ & \textemdash & $0.1$ \\
+CelebA, shading & $0.02$ & $0.02$ & $0.02$ & $0.02$ & \textemdash & $0.02$ \\
+CIFAR-10, checker & $6.25\!\cdot\!10^{-4}$ & $6.25\!\cdot\!10^{-4}$ & $6.25\!\cdot\!10^{-4}$ & $6.25\!\cdot\!10^{-4}$ & \textemdash & $6.25\!\cdot\!10^{-4}$ \\
+\midrule
+\multicolumn{7}{l}{\emph{(d) power at $\alpha=0.05$ on the cells of the previous version of this table}}\\
+Fields, slope $0.064$, $N{=}16/64/256$ & $.46/.58/.75$ & $.92/1.00/1.00$ & $.92/.96/1.00$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ \\
+Fields, marginal $1/12$, $N{=}16/64/256$ & $.25/.42/.79$ & $.21/.46/.88$ & $.21/.33/.79$ & $.17/.29/.83$ & $.17/.33/1.00$ & $.12/1.00/1.00$ \\
+CelebA, noise $0.0025$, $N{=}16/64/256$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ & $1.00/1.00/1.00$ \\
+CelebA, blur $0.33$, $N{=}500$ & $1.00$ & $1.00$ & $1.00$ & $1.00$ & $1.00$ & $1.00$ \\
+CelebA, shading $0.08$, $N{=}500$ & $1.00$ & $1.00$ & $1.00$ & $1.00$ & $1.00$ & $1.00$ \\
+CIFAR-10, checker $0.01$, $N{=}500$ & $1.00$ & $1.00$ & $1.00$ & $.67$ & $1.00$ & $1.00$ \\
+\midrule
+\multicolumn{7}{l}{\emph{(e) size at $\alpha=0.05$ under $H_0$}}\\
+Fields, slope, $N{=}500$ $[400]$ & $.030$ & $.037$ & $.055$ & $.060$ & $.035$ & $.062$ \\
+Fields, slope, $N{=}64$ $[400]$ & $.058$ & $.050$ & $.058$ & $.043$ & $.065$ & $.050$ \\
+CelebA, noise, $N{=}500$ $[700]$ & $.046$ & $.053$ & $.061$ & $.066$ & $.060$ & $.063$ \\
+CIFAR-10, checker, $N{=}500$ $[700]$ & $.049$ & $.053$ & $.046$ & $.039$ & $.044$ & $.053$ \\
+\bottomrule
+\end{tabular}

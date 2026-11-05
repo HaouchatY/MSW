@@ -1,0 +1,11 @@
+\begin{tabular}{lrrrrr}
+\toprule
+& $\Delta$FID & $\Delta$DINOv2-FD & $\Delta$CMMD & MSW $T$ & MSW $d$ \\
+\midrule
+bilinear vs.\ nearest & $+0.830$ & $+3.14$ & $+0.130$ & $20.2$ & $+0.0213$ \\
+lanczos vs.\ nearest & $+0.721$ & $+2.10$ & $+0.090$ & $9.9$ & $+0.0081$ \\
+bicubic vs.\ JPEG\,$q90$ & $+0.719$ & $+1.14$ & $+0.265$ & $19.7$ & $-0.0026$ \\
+nearest vs.\ box & $+0.130$ & $+0.01$ & $+0.018$ & $7.7$ & $+0.0037$ \\
+lanczos vs.\ torchvision AA & $+0.031$ & $+0.00$ & $+0.028$ & $8.5$ & $+0.0038$ \\
+\bottomrule
+\end{tabular}

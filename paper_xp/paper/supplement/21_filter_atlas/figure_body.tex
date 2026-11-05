@@ -1,0 +1,28 @@
+% Rendered from msw.dct_bank / msw.opponent_dct_bank by figure.py (data/*.png).
+% The 5x5 DCT filter bank: 24 AC atoms (DC crossed out, dropped), rendered mid-gray = 0.
+% Channel-axis strip: the atoms are applied along luminance and the two opponent chroma
+% axes (portfolio slice families); tiles show each axis's +/- colors.
+% Ghost copy at 55% behind = the same bank applied at coarser pyramid levels.
+\begin{tikzpicture}[x=1mm, y=1mm, every node/.style={inner sep=0}]
+  % ghost (pyramid hint), behind, offset up-right
+  \begin{scope}[shift={(37.5,5)}, opacity=0.45]
+    \foreach \a in {0,...,4} \foreach \c in {0,...,4}
+      \node at (4.0*\c,-4.0*\a) {\includegraphics[width=3.7mm]{data/atlas_\a\c.png}};
+    \draw[black!40, thin] (-2.2,2.2) rectangle (18.2,-18.2);
+  \end{scope}
+  % main grid
+  \foreach \a in {0,...,4} \foreach \c in {0,...,4}
+    \node at (7.2*\c,-7.2*\a) {\includegraphics[width=6.8mm]{data/atlas_\a\c.png}};
+  \draw[black!60, thin] (-3.9,3.9) rectangle (32.7,-32.7);
+  % DC dropped
+  \draw[black!70] (-3.2,3.2) -- (3.2,-3.2); \draw[black!70] (-3.2,-3.2) -- (3.2,3.2);
+  % axis labels: frequency increases right/down
+  \node[font=\tiny, black!60, anchor=west] at (46.5,-16.5) {$\ell{=}0,\dots,3$};
+  \node[font=\scriptsize, anchor=north] at (14.4,-34.6) {horizontal frequency $\rightarrow$};
+  % opponent channel axes (the portfolio's second slice family)
+  \node[font=\scriptsize, anchor=west] at (37.5,-24) {channel axes:};
+  \foreach \x/\f/\t in {37.5/lum/{lum}, 45/rg/{R$-$G}, 53/by/{B$-$Y}}{
+    \node[anchor=west] at (\x,-28.5) {\includegraphics[width=5mm, height=2.5mm]{data/axis_\f.png}};
+    \node[font=\tiny, anchor=north] at (\x+2.5,-30.3) {\t};}
+  \node[font=\scriptsize, rotate=90, anchor=south] at (-5.8,-14.4) {vertical frequency $\rightarrow$};
+\end{tikzpicture}
