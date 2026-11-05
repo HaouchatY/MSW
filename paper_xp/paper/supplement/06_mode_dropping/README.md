@@ -1,4 +1,4 @@
-# Fig. S (fig:modedrop) — Mode dropping: semantic against statistical modes
+# Mode dropping: semantic and statistical modes
 
 ![](figure.png)
 

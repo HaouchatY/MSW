@@ -1,4 +1,4 @@
-# Tab. "Reading a detection" — per-level transport z by slice family
+# Reading a detection
 
 | | level 0 | level 1 | level 2 |
 |---|---|---|---|

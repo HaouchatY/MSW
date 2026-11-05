@@ -1,4 +1,4 @@
-# Sec. 5 / App. size — Size of the MSW test
+# Size of the test
 
 | Family | N | reps | rejections | size | 95% Wilson CI |
 |---|---|---|---|---|---|

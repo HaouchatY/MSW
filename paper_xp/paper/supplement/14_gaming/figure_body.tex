@@ -1,0 +1,41 @@
+% (a) Selection attack: deflection z of every metric, random vs feature-matched
+%     selection of blurred CIFAR (ours: msw.test's T, same z construction).
+% (b) MSW's decision: rejection rate of the exact test at 0.05 (Wilson 95%)
+%     before and after each attack; dotted line = rate on the null cell.
+\begin{tikzpicture}
+\begin{axis}[mswbase, name=za, width=0.62\textwidth, height=4.2cm, ymode=log,
+  title={(a) selection only (images stay blurred)},
+  ymin=0.04, ymax=900, xmin=0.4, xmax=9.6, xtick={1,...,9},
+  ylabel={deflection $z$},
+  xticklabels={FID,KID,CMMD,DINOv2,C2ST,cov.,SW,CSW,ours},
+  x tick label style={font=\tiny, rotate=38, anchor=north east, yshift=2pt},
+  legend pos=south west, legend style={font=\tiny, row sep=-3pt}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.4,0.04) rectangle (axis cs:9.6,2.4865);
+\addplot[thr] coordinates {(0.4,2.4865)(9.6,2.4865)};
+\addplot[only marks, mark=square, mark size=2pt, cbVerm, line width=0.9pt]
+  table[x=i,y=rand,col sep=comma]{data/gaming_z.csv};
+\addlegendentry{random selection}
+\addplot[only marks, mark=*, mark size=1.8pt, black]
+  table[x=i,y=gamed,col sep=comma]{data/gaming_z.csv};
+\addlegendentry{feature-matched selection}
+\end{axis}
+\IfFileExists{data/gaming_power.csv}{
+\begin{axis}[mswbase, at={(za.east)}, anchor=west, xshift=12mm, width=0.36\textwidth, height=4.2cm,
+  title={(b) MSW rejection rate},
+  ymin=0, ymax=1.05, xmin=0.5, xmax=3.5, xtick={1,2,3},
+  xticklabels={selection,HB noise,HB blur},
+  x tick label style={font=\tiny, rotate=38, anchor=north east, yshift=2pt},
+  legend pos=south east, legend style={font=\tiny, row sep=-3pt}]
+\addplot[black!60, densely dotted, no marks, forget plot]
+  table[x expr=\thisrow{i}, y=size, col sep=comma]{data/gaming_power.csv};
+\addplot[only marks, mark=square, mark size=2pt, cbVerm, line width=0.9pt,
+  error bars/.cd, y dir=both, y explicit]
+  table[x expr=\thisrow{i}-0.12, y=before, y error plus=before_ep, y error minus=before_em,
+        col sep=comma]{data/gaming_power.csv};
+\addlegendentry{before}
+\addplot[only marks, mark=*, mark size=1.8pt, black, error bars/.cd, y dir=both, y explicit]
+  table[x expr=\thisrow{i}+0.12, y=after, y error plus=after_ep, y error minus=after_em,
+        col sep=comma]{data/gaming_power.csv};
+\addlegendentry{after}
+\end{axis}}{}
+\end{tikzpicture}

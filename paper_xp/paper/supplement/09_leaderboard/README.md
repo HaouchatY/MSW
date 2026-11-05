@@ -1,4 +1,4 @@
-# Fig. S (app:leaderboard) — Ranking ten models with a known key
+# Ranking ten models with a known key
 
 ![](figure.png)
 

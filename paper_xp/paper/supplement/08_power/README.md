@@ -1,4 +1,4 @@
-# Fig. S (app:power) — Power against sample count
+# Power against sample count
 
 ![](figure.png)
 

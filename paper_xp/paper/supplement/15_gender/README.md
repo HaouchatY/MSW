@@ -1,4 +1,4 @@
-# Fig. S (fig:gender) — CelebA gender, aligned
+# CelebA gender, aligned
 
 ![](figure.png)
 

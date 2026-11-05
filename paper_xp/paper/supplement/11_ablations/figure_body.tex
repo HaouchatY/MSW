@@ -1,0 +1,42 @@
+% Ablation of the shipped portfolio: pyramid levels (left), slice families (middle, right);
+% deflection z against 50 null runs, floored at 0.055 for the log axis (figure.py).
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=3 by 1, horizontal sep=13mm},
+  mswbase, width=5cm, height=4.0cm, xmode=log, ymode=log,
+  ymin=0.04, ymax=4000, ylabel={$z$}, legend style={font=\tiny, draw=none, fill=none},
+  every axis title/.append style={font=\scriptsize}]
+\nextgroupplot[title={scales: confined boost}, xlabel={boost $\delta$},
+  xtick={0.04,0.08,0.16,0.32}, xticklabels={.04,.08,.16,.32},
+  legend style={at={(0.03,0.97)}, anchor=north west}, legend columns=2]
+\fill[red!70!black, opacity=0.08] (axis cs:0.04,0.04) rectangle (axis cs:0.32,1.645);
+\addplot[thr] coordinates {(0.04,1.645)(0.32,1.645)};
+\addplot[cbBlue!35, thin, mark=*, mark size=1pt] table[x=delta,y=L0,col sep=comma]{data/abl_levels.csv}; \addlegendentry{$\ell{=}0$}
+\addplot[cbBlue!55, thin, mark=*, mark size=1pt] table[x=delta,y=L1,col sep=comma]{data/abl_levels.csv}; \addlegendentry{$1$}
+\addplot[cbBlue!75, thin, mark=*, mark size=1pt] table[x=delta,y=L2,col sep=comma]{data/abl_levels.csv}; \addlegendentry{$2$}
+\addplot[cbBlue, line width=1pt, mark=*, mark size=1.2pt] table[x=delta,y=L3,col sep=comma]{data/abl_levels.csv}; \addlegendentry{$3$}
+\addplot[cbBlue!60!black, thin, mark=*, mark size=1pt] table[x=delta,y=L4,col sep=comma]{data/abl_levels.csv}; \addlegendentry{$4$}
+\addplot[cours] table[x=delta,y=core,col sep=comma]{data/abl_levels.csv}; \addlegendentry{CORE}
+\nextgroupplot[title={families: CelebA noise}, xlabel={noise $\sigma$},
+  xtick={0.00025,0.001,0.0025}, xticklabels={.00025,.001,.0025},
+  legend style={at={(0.03,0.97)}, anchor=north west}, legend columns=2]
+\fill[red!70!black, opacity=0.08] (axis cs:0.00025,0.04) rectangle (axis cs:0.0025,1.645);
+\addplot[thr] coordinates {(0.00025,1.645)(0.0025,1.645)};
+\addplot[cours] table[x=eps,y=portfolio,col sep=comma]{data/abl_noise.csv}; \addlegendentry{portfolio}
+\addplot[cbOrange, thin, mark=square*, mark size=1pt] table[x=eps,y=dct,col sep=comma]{data/abl_noise.csv}; \addlegendentry{per-channel}
+\addplot[cbBlue, thin, mark=triangle*, mark size=1.2pt] table[x=eps,y=chroma,col sep=comma]{data/abl_noise.csv}; \addlegendentry{chroma}
+\addplot[cbGreen, thin, mark=diamond*, mark size=1.2pt] table[x=eps,y=pixel,col sep=comma]{data/abl_noise.csv}; \addlegendentry{raw pixel}
+\addplot[cbPurple, thin, mark=o, mark size=1.1pt] table[x=eps,y=product,col sep=comma]{data/abl_noise.csv}; \addlegendentry{product}
+
+\nextgroupplot[title={families: CIFAR checker}, xlabel={checker $\varepsilon$},
+  xtick={0.0025,0.01,0.02}, xticklabels={.0025,.01,.02},
+  legend style={at={(0.03,0.97)}, anchor=north west}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.0025,0.04) rectangle (axis cs:0.02,1.645);
+\addplot[thr] coordinates {(0.0025,1.645)(0.02,1.645)};
+\addplot[cours] table[x=eps,y=portfolio,col sep=comma]{data/abl_checker.csv};
+\addplot[cbOrange, thin, mark=square*, mark size=1pt] table[x=eps,y=dct,col sep=comma]{data/abl_checker.csv};
+\addplot[cbBlue, thin, mark=triangle*, mark size=1.2pt] table[x=eps,y=chroma,col sep=comma]{data/abl_checker.csv};
+\addplot[cbGreen, thin, mark=diamond*, mark size=1.2pt] table[x=eps,y=pixel,col sep=comma]{data/abl_checker.csv};
+\addplot[cbPurple, thin, mark=o, mark size=1.1pt] table[x=eps,y=product,col sep=comma]{data/abl_checker.csv};
+
+\end{groupplot}
+\end{tikzpicture}

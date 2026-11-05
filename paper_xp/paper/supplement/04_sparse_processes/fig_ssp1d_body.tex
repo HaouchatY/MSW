@@ -1,0 +1,18 @@
+% s = L^{-1} w on length-4096 signals, near-integrator a = 0.995; first 1500
+% samples of one realisation per innovation law (illustrate.py).
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=1 by 5, vertical sep=2pt, xticklabels at=edge bottom},
+  mswbase, width=14cm, height=2.4cm, xmin=0, xmax=1500, ytick=\empty, no marks,
+  ylabel style={font=\scriptsize, rotate=-90, anchor=east}, axis x line*=bottom, axis y line*=left]
+\nextgroupplot[ylabel={Gaussian}]
+\addplot[black, very thin] table[x=t, y=gaussian, col sep=comma]{data/ssp1d_traces.csv};
+\nextgroupplot[ylabel={Laplace}]
+\addplot[black, very thin] table[x=t, y=laplace, col sep=comma]{data/ssp1d_traces.csv};
+\nextgroupplot[ylabel={Student-$t_4$}]
+\addplot[black, very thin] table[x=t, y=student4, col sep=comma]{data/ssp1d_traces.csv};
+\nextgroupplot[ylabel={B--L $p{=}0.05$}]
+\addplot[black, very thin] table[x=t, y=bernlap_0.05, col sep=comma]{data/ssp1d_traces.csv};
+\nextgroupplot[ylabel={B--L $p{=}0.005$}, xlabel={sample index}]
+\addplot[black, very thin] table[x=t, y=bernlap_0.005, col sep=comma]{data/ssp1d_traces.csv};
+\end{groupplot}
+\end{tikzpicture}

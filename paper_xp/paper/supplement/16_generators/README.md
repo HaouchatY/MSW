@@ -1,4 +1,4 @@
-# Fig. S (fig:generators) — Real generators
+# Real generators
 
 ![](figure.png)
 

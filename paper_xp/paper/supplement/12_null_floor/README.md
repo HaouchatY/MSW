@@ -1,4 +1,4 @@
-# Fig. S (fig:null) — Zero floor on null draws
+# Zero floor on null draws
 
 ![](figure.png)
 

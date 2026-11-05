@@ -1,4 +1,4 @@
-# Fig. S1 — The nine settings
+# The nine settings
 
 ![](figure.png)
 

@@ -1,4 +1,4 @@
-# Supp. Fig. (app:nullspace) — Resize blindness: the feature nullspace
+# Resize blindness: the feature nullspace
 
 ![](figure.png)
 

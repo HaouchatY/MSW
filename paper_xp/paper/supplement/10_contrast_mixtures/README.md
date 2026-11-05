@@ -1,4 +1,4 @@
-# Fig. S (fig:camouflage) — Moment-matched contrast mixtures
+# Moment-matched contrast mixtures
 
 ![](figure.png)
 

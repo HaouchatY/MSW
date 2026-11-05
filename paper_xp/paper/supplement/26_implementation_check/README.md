@@ -1,4 +1,4 @@
-# Tab. "Implementation checks" — baselines against the official packages
+# Baselines against the official packages
 
 | quantity | ours | official | package | relative gap |
 |---|---|---|---|---|

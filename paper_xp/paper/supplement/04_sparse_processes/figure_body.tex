@@ -1,0 +1,115 @@
+% Whitened sparse stochastic processes (near-integrator a = 0.995): deflection |z|
+% against N, 1D (top) and 2D (bottom); data from figure.py.  Shaded: |z| below the
+% one-sided 95% null band 2.4865.  MSW (black) = msw.test T on 50 + 50 repetitions,
+% 1D read on the 64 x 64 raster; baselines 12 repetitions.
+\pgfplotsset{sspspec/.style={cbOrange, densely dashed, mark=asterisk}}
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=4 by 2, horizontal sep=9pt,
+    vertical sep=60pt, yticklabels at=edge left},
+  mswbase, width=0.30\textwidth, height=3.9cm, xmode=log, ymode=log,
+  ymin=0.04, title style={font=\scriptsize},
+  unbounded coords=discard, filter discard warning=false]
+% ---- row 1: 1D ----
+\nextgroupplot[title={Laplace}, ymax=300, xtick={8,32,128},
+  xticklabels={8,32,128},
+  ylabel={1D: $|z|$},
+  legend to name=sspleg1, legend columns=6, legend style={font=\tiny},
+  legend entries={spectrum, SW, F-wav2vec, MMD-wav2vec, C2ST-wav2vec, MSW-1D (ours)}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:150,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(150,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d1_laplace.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d1_laplace.csv};
+\addplot[cfid]  table[x=n,y=fwd,col sep=comma]{data/ssp_d1_laplace.csv};
+\addplot[ccmmd] table[x=n,y=wmmd,col sep=comma]{data/ssp_d1_laplace.csv};
+\addplot[cc2st] table[x=n,y=wc2st,col sep=comma]{data/ssp_d1_laplace.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d1_laplace.csv};
+\nextgroupplot[title={Student-$t_4$}, ymax=300, xtick={8,32,128}, xticklabels={8,32,128}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:150,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(150,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d1_student4.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d1_student4.csv};
+\addplot[cfid]  table[x=n,y=fwd,col sep=comma]{data/ssp_d1_student4.csv};
+\addplot[ccmmd] table[x=n,y=wmmd,col sep=comma]{data/ssp_d1_student4.csv};
+\addplot[cc2st] table[x=n,y=wc2st,col sep=comma]{data/ssp_d1_student4.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d1_student4.csv};
+\nextgroupplot[title={Bernoulli--Laplace}, ymax=300, xtick={8,32,128}, xticklabels={8,32,128}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:150,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(150,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d1_bernlap.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d1_bernlap.csv};
+\addplot[cfid]  table[x=n,y=fwd,col sep=comma]{data/ssp_d1_bernlap.csv};
+\addplot[ccmmd] table[x=n,y=wmmd,col sep=comma]{data/ssp_d1_bernlap.csv};
+\addplot[cc2st] table[x=n,y=wc2st,col sep=comma]{data/ssp_d1_bernlap.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d1_bernlap.csv};
+\nextgroupplot[title={control: operator}, ymax=300, xtick={8,32,128}, xticklabels={8,32,128}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:150,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(150,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d1_opshift.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d1_opshift.csv};
+\addplot[cfid]  table[x=n,y=fwd,col sep=comma]{data/ssp_d1_opshift.csv};
+\addplot[ccmmd] table[x=n,y=wmmd,col sep=comma]{data/ssp_d1_opshift.csv};
+\addplot[cc2st] table[x=n,y=wc2st,col sep=comma]{data/ssp_d1_opshift.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d1_opshift.csv};
+% ---- row 2: 2D ----
+\nextgroupplot[title={Laplace}, ymax=300, xtick={8,32,128,500},
+  xticklabels={8,32,128,500}, xlabel={$N$},
+  ylabel={2D: $|z|$},
+  legend to name=sspleg2, legend columns=5, legend style={font=\tiny},
+  legend entries={spectrum, FID, KID, CMMD, DINOv2, C2ST, coverage, SW, CSW, MSW (ours)}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:600,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(600,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[cfid]  table[x=n,y=fid,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[ckid]  table[x=n,y=kid,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[ccsw]  table[x=n,y=csw,col sep=comma]{data/ssp_d2_laplace.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d2_laplace.csv};
+\nextgroupplot[title={Student-$t_4$}, ymax=300, xtick={8,32,128,500}, xticklabels={8,32,128,500}, xlabel={$N$}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:600,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(600,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[cfid]  table[x=n,y=fid,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[ckid]  table[x=n,y=kid,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[ccsw]  table[x=n,y=csw,col sep=comma]{data/ssp_d2_student4.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d2_student4.csv};
+\nextgroupplot[title={Bernoulli--Laplace}, ymax=300, xtick={8,32,128,500}, xticklabels={8,32,128,500}, xlabel={$N$}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:600,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(600,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[cfid]  table[x=n,y=fid,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[ckid]  table[x=n,y=kid,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[ccsw]  table[x=n,y=csw,col sep=comma]{data/ssp_d2_bernlap.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d2_bernlap.csv};
+\nextgroupplot[title={control: operator}, ymax=1e5, yticklabel pos=right, yticklabel={\axisdefaultticklabellog}, xtick={8,32,128,500}, xticklabels={8,32,128,500}, xlabel={$N$}]
+\fill[red!70!black, opacity=0.08] (axis cs:7,0.04) rectangle (axis cs:600,2.4865);
+\addplot[thr] coordinates {(7,2.4865)(600,2.4865)};
+\addplot[sspspec] table[x=n,y=spectrum,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[cfid]  table[x=n,y=fid,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[ckid]  table[x=n,y=kid,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[ccmmd] table[x=n,y=cmmd,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[cdino] table[x=n,y=dino,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[cc2st] table[x=n,y=c2st,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[ccov]  table[x=n,y=coverage,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[csw]   table[x=n,y=sw,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[ccsw]  table[x=n,y=csw,col sep=comma]{data/ssp_d2_opshift.csv};
+\addplot[cours] table[x=n,y=ours,col sep=comma]{data/ssp_d2_opshift.csv};
+\end{groupplot}
+\node[anchor=north, yshift=-2pt] at ($(group c2r1.south)!0.5!(group c3r1.south)+(0,-22pt)$)
+  {\pgfplotslegendfromname{sspleg1}};
+\node[anchor=north] at ($(group c2r2.south)!0.5!(group c3r2.south)+(0,-22pt)$)
+  {\pgfplotslegendfromname{sspleg2}};
+\end{tikzpicture}

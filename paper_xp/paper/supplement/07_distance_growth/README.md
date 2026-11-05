@@ -1,4 +1,4 @@
-# Figs. S5–S6 — Does the distance grow with the perturbation?
+# Does the distance grow with the perturbation?
 
 ![](figure.png)
 

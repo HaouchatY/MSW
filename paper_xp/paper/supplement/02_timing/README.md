@@ -1,4 +1,4 @@
-# Table S1 — Wall-clock per evaluation
+# Wall-clock per evaluation
 
 Median seconds for one evaluation of one pair of sets of N images (random 32-px 3-channel CelebA crops), feature extraction of both sets included, one-time setup (network loading, SW directions, CSW kernels, P–S pool, MSW's cached portfolio) excluded. 2 warm-up and 25 timed calls per cell, synchronised, on one NVIDIA H200 (torch 2.10.0+cu128, msw 0.3.0). Fastest value per column in bold.
 

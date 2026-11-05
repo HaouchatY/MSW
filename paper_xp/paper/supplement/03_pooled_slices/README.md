@@ -1,4 +1,4 @@
-# Tables S-pooled / S-pooled-supp — Two-sample tests on the same pooled slices
+# Generic two-sample tests on the same pooled slices
 
 ε₀.₈ (smallest rung with power ≥ 0.8 at α = 0.05, kept at every larger rung; lower is better). Bold: the lowest value in the row, counting MSW's matched-budget value on the 8192 rows (MSW does not depend on the budget).
 

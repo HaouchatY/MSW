@@ -1,4 +1,4 @@
-# Fig. S (fig:edm2) and Table S (tab:edm2paired) — EDM2 training snapshots
+# EDM2 training snapshots
 
 ![](figure.png)
 

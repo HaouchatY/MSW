@@ -1,4 +1,4 @@
-# App. (app:dtd) — Held-out textures (DTD)
+# Held-out textures (DTD)
 
 | | FID | KID | CMMD | DINOv2 | C2ST | cov. | SW | CSW | MSW |
 |---|---|---|---|---|---|---|---|---|---|

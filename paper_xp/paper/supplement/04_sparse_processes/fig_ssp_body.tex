@@ -1,0 +1,12 @@
+% s = (DxDy)^{-1} w, near-integrator a = 0.995 per axis; tiles from illustrate.py,
+% each field standardized, grey scale [-2.5, 2.5].
+\begin{tikzpicture}[every node/.style={font=\scriptsize}]
+\foreach \i/\t in {0/{Bernoulli--Laplace\\$p{=}0.004$, 64\,px},
+                   1/{Bernoulli--Laplace\\$p{=}0.02$, 64\,px},
+                   2/{Bernoulli--Laplace\\$p{=}0.05$, 32\,px (benchmark)},
+                   3/{Gaussian\\same operator, 64\,px}} {
+  \node[inner sep=0, anchor=north west] (t\i) at (\i*3.6cm, 0)
+    {\includegraphics[width=3.4cm]{data/ssp_tile_\i.png}};
+  \node[anchor=south, align=center] at (t\i.north) {\t};
+}
+\end{tikzpicture}

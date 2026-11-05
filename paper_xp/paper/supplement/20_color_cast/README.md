@@ -1,4 +1,4 @@
-# App. "Global color cast" — constant chromatic cast on CelebA crops
+# Global colour cast
 
 | ε | FID | KID | CMMD | DINOv2 | C2ST | coverage | SW | CSW | MSW | MSW−PX |
 |---|---|---|---|---|---|---|---|---|---|---|

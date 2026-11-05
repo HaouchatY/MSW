@@ -1,0 +1,31 @@
+% Confined boost (128-px fields, N = 200): per pyramid level (left), aggregated (right).
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=8pt, ylabels at=edge left},
+  msw, width=9cm, ymin=0.05, ymax=40, xlabel={$\delta$}, ylabel={$z$},
+  xtick={0.04,0.08,0.16,0.32}, xticklabels={.04,.08,.16,.32}]
+\nextgroupplot[title={per pyramid level},
+  legend to name=depthlegend, legend columns=5,
+  legend entries={$\ell{=}0$, $\ell{=}1$, $\ell{=}2$, $\ell{=}3$, $\ell{=}4$,
+                  scale-aware, 1 scale, default, CORE (shipped)}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.04,0.05) rectangle (axis cs:0.32,1.645);
+\addplot[cbOrange, mark=square*]  table[x=delta, y=L0, col sep=comma]{data/depth_perlevel.csv};
+\addplot[cbSky, mark=+]           table[x=delta, y=L1, col sep=comma]{data/depth_perlevel.csv};
+\addplot[cbGreen, mark=triangle*] table[x=delta, y=L2, col sep=comma]{data/depth_perlevel.csv};
+\addplot[black, line width=1.3pt, mark=*] table[x=delta, y=L3, col sep=comma]{data/depth_perlevel.csv};
+\addplot[cbBlue, mark=diamond*]   table[x=delta, y=L4, col sep=comma]{data/depth_perlevel.csv};
+\addlegendimage{black, line width=1.3pt, mark=*}
+\addlegendimage{cstd}
+\addlegendimage{civ}
+\addlegendimage{cbPurple, densely dotted, mark=o}
+\addplot[thr] coordinates {(0.04,1.645)(0.32,1.645)};
+\nextgroupplot[title={aggregated statistic}, yticklabels={}]
+\fill[red!70!black, opacity=0.08] (axis cs:0.04,0.05) rectangle (axis cs:0.32,1.645);
+\addplot[black, line width=1.3pt, mark=*] table[x=delta, y=scaleaware, col sep=comma]{data/depth_endtoend.csv};
+\addplot[cstd] table[x=delta, y=onescale, col sep=comma]{data/depth_endtoend.csv};
+\addplot[civ]  table[x=delta, y=default,  col sep=comma]{data/depth_endtoend.csv};
+\addplot[cbPurple, densely dotted, mark=o] table[x=delta, y=core, col sep=comma]{data/depth_endtoend.csv};
+\addplot[thr] coordinates {(0.04,1.645)(0.32,1.645)};
+\end{groupplot}
+\node[anchor=north] at ($(group c1r1.south east)!0.5!(group c2r1.south west)+(0,-24pt)$)
+  {\pgfplotslegendfromname{depthlegend}};
+\end{tikzpicture}

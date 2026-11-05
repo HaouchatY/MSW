@@ -1,4 +1,4 @@
-# Tab. "Representation or inference?" — Portilla–Simoncelli inside MSW's machinery
+# Portilla–Simoncelli inside MSW's machinery
 
 | setting | P–S, plain | P–S, standardised | MSW transport only | ratio (std / T) |
 |---|---|---|---|---|

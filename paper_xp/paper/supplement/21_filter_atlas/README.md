@@ -1,4 +1,4 @@
-# Fig. "Filter atlas" — the 5×5 DCT atoms and the colour axes
+# Filter atlas
 
 ![](figure.png)
 

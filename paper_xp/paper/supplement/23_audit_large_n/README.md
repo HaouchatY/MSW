@@ -1,4 +1,4 @@
-# Tab. "Systematic shift at N = 800" — preprocessing audit at large N
+# Preprocessing audit at N = 800
 
 | pair | ΔFID | ΔDINOv2-FD | ΔCMMD | MSW T | MSW d |
 |---|---|---|---|---|---|
